@@ -1,5 +1,18 @@
 #!/bin/sh
+if [ ! -d "build" ]; then
+  mkdir build
+fi
+
+if [ ! -d "bin" ]; then
+  mkdir bin
+fi
+
 cd build
+
+if [ ! -e CMakeCache.txt ]; then
+  cmake ..
+fi
+
 make
 cd ../bin
 ./2link
