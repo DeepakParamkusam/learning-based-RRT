@@ -20,7 +20,7 @@ void gen_data(float bounds[10], int index)
 
   //  -------------------------------------
   OCP ocp( 0.0, 0.5 );
-  ocp.minimizeMayerTerm(T);
+  ocp.minimizeMayerTerm(T*T + tau1*qd1*tau1*qd1 + tau2*qd2*tau2*qd2);
 
   f << dot(q1) == qd1;
   f << dot(q2) == qd2;
@@ -68,7 +68,7 @@ void gen_data(float bounds[10], int index)
     parameters_nm = "parameters_"+std::to_string(index)+".txt";
     control_nm = "control_"+std::to_string(index)+".txt";
     algorithm.getDifferentialStates(states_nm.c_str());
-    algorithm.getParameters(parameters_nm.c_str());
+    algorithm.getObjectiveValue(parameters_nm.c_str());
     algorithm.getControls(control_nm.c_str());
   }
   clearAllStaticCounters();
