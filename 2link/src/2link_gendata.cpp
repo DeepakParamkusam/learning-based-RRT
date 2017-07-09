@@ -5,10 +5,10 @@
 
 #define pi 3.14159
 
-void gen_data(float bounds[14],int index);
+void gen_data(float bounds[10],int index);
 float rand_gen(float min, float max);
 
-void gen_data(float bounds[14], int index)
+void gen_data(float bounds[10], int index)
 {
   std::string states_nm, parameters_nm, control_nm;
   USING_NAMESPACE_ACADO
@@ -16,11 +16,11 @@ void gen_data(float bounds[14], int index)
   DifferentialState        q1,q2,qd1,qd2;   // the differential states
   Control                  tau1,tau2;       // the control input u
   Parameter                T;
-  DifferentialEquation     f( 0.0, T );
+  DifferentialEquation     f;
 
   //  -------------------------------------
-  OCP ocp( 0.0, T );
-  ocp.minimizeMayerTerm( T );
+  OCP ocp( 0.0, 0.5 );
+  ocp.minimizeMayerTerm(T);
 
   f << dot(q1) == qd1;
   f << dot(q2) == qd2;
@@ -38,9 +38,11 @@ void gen_data(float bounds[14], int index)
   ocp.subjectTo(AT_END, qd1 == bounds[6]);
   ocp.subjectTo(AT_END, qd2 == bounds[7]);
 
-  ocp.subjectTo(bounds[8] <= tau1 <= bounds[9]);  // bounds on the control input u,
-  ocp.subjectTo(bounds[10] <= tau2 <= bounds[11]);
-  ocp.subjectTo(bounds[12] <= T <= bounds[13]);     // and the time horizon T.
+  ocp.subjectTo(0.0 <= q1 <= 2*pi);
+  ocp.subjectTo(0.0 <= q2 <= 2*pi);
+  ocp.subjectTo(-500 <= tau1 <= 500);  // bounds on the control input u,
+  ocp.subjectTo(-500 <= tau2 <= 500);
+
   //  -------------------------------------
 
   OptimizationAlgorithm algorithm(ocp);     // the optimization algorithm
@@ -51,13 +53,24 @@ void gen_data(float bounds[14], int index)
 
   algorithm.solve();                        // solves the problem.
 
-  states_nm = "states_"+std::to_string(index)+".txt";
-  parameters_nm = "parameters_"+std::to_string(index)+".txt";
-  control_nm = "control_"+std::to_string(index)+".txt";
-  algorithm.getDifferentialStates(states_nm.c_str());
-  algorithm.getParameters(parameters_nm.c_str());
-  algorithm.getControls(control_nm.c_str());
+  VariablesGrid grid;
+  algorithm.getDifferentialStates(grid);
+  DVector final_state(4), req_state(4), diff(4);
+  final_state = grid.getLastVector();
+  req_state(0)=bounds[4];
+  req_state(1)=bounds[5];
+  req_state(2)=bounds[6];
+  req_state(3)=bounds[7];
+  diff = final_state - req_state;
 
+  if (diff.getNorm(VN_L2) < 0.001){
+    states_nm = "states_"+std::to_string(index)+".txt";
+    parameters_nm = "parameters_"+std::to_string(index)+".txt";
+    control_nm = "control_"+std::to_string(index)+".txt";
+    algorithm.getDifferentialStates(states_nm.c_str());
+    algorithm.getParameters(parameters_nm.c_str());
+    algorithm.getControls(control_nm.c_str());
+  }
   clearAllStaticCounters();
 }
 
@@ -69,14 +82,17 @@ float rand_gen(float lim[2]) {
 }
 
 int main(){
+  srand (time(NULL));
   int i;
-  float q_lims[2] = {0,pi};
-  float T_lims[4] = {-100,100,-100,100};
-  float t_horizon[2] = {0.5,10};
+  float q_lims[2] = {0.0,2*pi};
+  float qd_lims[2] = {-30.0,30.0};
+  float T_lims[2] = {-400,400};
 
-  for(i=0; i<2000; i++){
-	   float bounds[14] = {rand_gen(q_lims),rand_gen(q_lims),0.0,0.0,rand_gen(q_lims),rand_gen(q_lims),0.0,0.0,T_lims[0],T_lims[1],T_lims[2],T_lims[3],t_horizon[0],t_horizon[1]};
-	   gen_data(bounds,i);
+  for(i=0; i<3000; i++){
+	  float bounds[10] = {rand_gen(q_lims),rand_gen(q_lims),rand_gen(qd_lims),rand_gen(qd_lims),rand_gen(q_lims),rand_gen(q_lims),rand_gen(qd_lims),rand_gen(qd_lims),T_lims[0],T_lims[1]};
+    std::cout << i << std::endl;
+    std::cout << bounds[0] << " " << bounds[1] << " " << bounds[2] << " " << bounds[3] << " " << bounds[4] << " " << bounds[5] << " " << bounds[6] << " " << bounds[7] << std::endl;
+    gen_data(bounds,i);
   }
   return 0;
 }

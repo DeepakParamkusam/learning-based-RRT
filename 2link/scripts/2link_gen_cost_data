@@ -1,0 +1,11 @@
+#!/bin/bash
+if [ "$#" -eq 1 ] && [ -d "$1" ]; then
+	for file in "$1"/data_*.txt; do
+		[ -f $file ] || continue
+		head -n1 $file | cut -f2-5 >> temp1
+		tail -n1 $file | cut -f2-5,8 >> temp2
+	done
+	paste temp1 temp2 > cost.txt
+	rm temp1 temp2
+	echo "Cost data generated"
+fi
