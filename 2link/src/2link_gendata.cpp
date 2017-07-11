@@ -20,6 +20,9 @@ void gen_data(float bounds[10], int index)
 
   //  -------------------------------------
   OCP ocp( 0.0, 0.5 );
+  // C1
+  // ocp.minimizeMayerTerm(T*T);
+  // C2
   ocp.minimizeMayerTerm(T*T + tau1*qd1*tau1*qd1 + tau2*qd2*tau2*qd2);
 
   f << dot(q1) == qd1;
