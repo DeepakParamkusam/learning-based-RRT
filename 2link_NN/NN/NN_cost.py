@@ -8,23 +8,19 @@ import numpy
 seed = 11
 numpy.random.seed(seed)
 
-data = numpy.loadtxt("cost_C4.txt",delimiter="\t")
+data = numpy.loadtxt("1_cost.txt",delimiter="\t")
 Xi= data[:,0:8] #input
 Yi = data[:,8:9] #output
 
-#scaling
-Xr = Xi.max(axis=0)-Xi.min(axis=0)
-Yr = Yi.max(axis=0)-Yi.min(axis=0)
-Xs = Xi-Xi.min(axis=0)
-Ys = Yi-Yi.min(axis=0)
-X = numpy.divide(Xs,Xr)
-Y = numpy.divide(Ys,Yr)
+#standardization
+X = numpy.divide(Xi-Xi.mean(axis=0),Xi.std(axis=0))
+Y = numpy.divide(Yi-Yi.mean(axis=0),Yi.std(axis=0))
 
 # create NN
 def base_model():
     model = Sequential()
-    model.add(Dense(8, input_dim=8,kernel_initializer='normal', activation='relu'))
-    model.add(Dense(8,kernel_initializer='normal', activation='relu'))
+    model.add(Dense(7, input_dim=8,kernel_initializer='normal', activation='relu'))
+    # model.add(Dense(8,kernel_initializer='normal', activation='relu'))
     model.add(Dense(1, kernel_initializer='normal'))
     model.compile(loss='mean_squared_error', optimizer='adam')
     return model

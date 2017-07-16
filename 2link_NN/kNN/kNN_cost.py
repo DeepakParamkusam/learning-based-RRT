@@ -2,17 +2,13 @@ import numpy
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.externals import joblib
 
-data = numpy.loadtxt("cost_C4.txt",delimiter="\t")
+data = numpy.loadtxt("1_cost.txt",delimiter="\t")
 Xi = data[:,0:8] #input
 Yi = data[:,8:9] #output
 
-#scaling
-Xr = Xi.max(axis=0)-Xi.min(axis=0)
-Yr = Yi.max(axis=0)-Yi.min(axis=0)
-Xs = Xi-Xi.min(axis=0)
-Ys = Yi-Yi.min(axis=0)
-X = numpy.divide(Xs,Xr)
-Y = numpy.divide(Ys,Yr)
+#standardization
+X = numpy.divide(Xi-Xi.mean(axis=0),Xi.std(axis=0))
+Y = numpy.divide(Yi-Yi.mean(axis=0),Yi.std(axis=0))
 
 #split into training data and validation data
 num_data = int(len(X)/8.0)
@@ -30,4 +26,4 @@ actual = Y_validate
 mse = (((predictions - actual) ** 2).sum()) / len(predictions)
 print mse
 
-joblib.dump(knn, 'knn_cost_C4')
+joblib.dump(knn, 'knn_cost_1')
