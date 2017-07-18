@@ -2,7 +2,7 @@ import numpy
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.externals import joblib
 
-data = numpy.loadtxt("1_control_data.txt",delimiter="\t")
+data = numpy.loadtxt("../training_data/2_control_data.txt",delimiter="\t")
 Xi = data[:,0:8] #input
 Yi = data[:,8:10] #output
 
@@ -26,4 +26,4 @@ actual = Y_validate
 mse = (((predictions - actual) ** 2).sum()) / len(predictions)
 print mse
 
-joblib.dump(knn, 'knn_control_1')
+joblib.dump(knn, '../trained_models/knn_control_2')

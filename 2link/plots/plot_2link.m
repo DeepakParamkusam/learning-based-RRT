@@ -9,7 +9,7 @@ figure(2);
 hold on;
 plot(data(:,1), data(:,4), 'r')
 plot(data(:,1), data(:,5), 'b')
-hold off;2
+hold off;
 legend('qd1', 'qd2');
 
 figure(3);

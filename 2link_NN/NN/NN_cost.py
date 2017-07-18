@@ -8,7 +8,7 @@ import numpy
 seed = 11
 numpy.random.seed(seed)
 
-data = numpy.loadtxt("1_cost.txt",delimiter="\t")
+data = numpy.loadtxt("../training_data/2_cost.txt",delimiter="\t")
 Xi= data[:,0:8] #input
 Yi = data[:,8:9] #output
 

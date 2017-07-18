@@ -26,9 +26,11 @@ int gen_data(float bounds[8], int index, char cost_func)
   OCP ocp( 0.0, 0.5 );
   switch(cost_func){
     case 'a': ocp.minimizeMayerTerm(T*T + tau1*qd1*tau1*qd1 + tau2*qd2*tau2*qd2);
+              cout << "cost function = sq_power" << endl;
               break;
 
     default: ocp.minimizeMayerTerm(T*T + tau1*tau1 + tau2*tau2);
+             cout << "cost function = sq_torque" << endl;
   }
 
   f << dot(q1) == qd1;
@@ -102,14 +104,13 @@ int main(int argc, const char * argv[]){
     cout << "Incorrect number of arguments." << endl;
   }
   else{
-    cout << "Using cost function " << *argv[1] << endl;
     int num_iter = atoi(argv[2]);
     i = 0;
     while(i<num_iter){
       float bounds[8] = {rand_gen(q_lims),rand_gen(q_lims),rand_gen(qd_lims),rand_gen(qd_lims),rand_gen(q_lims),rand_gen(q_lims),rand_gen(qd_lims),rand_gen(qd_lims)};
       cout << i << endl;
       cout << bounds[0] << " " << bounds[1] << " " << bounds[2] << " " << bounds[3] << " " << bounds[4] << " " << bounds[5] << " " << bounds[6] << " " << bounds[7] << endl;
-      bool success = gen_data(bounds,i,*argv[2]);
+      bool success = gen_data(bounds,i,*argv[1]);
       if(success){
         i++;
       }

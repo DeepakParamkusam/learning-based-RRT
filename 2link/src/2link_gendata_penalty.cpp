@@ -9,12 +9,14 @@
 
 using namespace std;
 
-void gen_data(float bounds[8],int index, char cost_func);
+int gen_data(float bounds[8],int index, char cost_func);
 float rand_gen(float min, float max);
 
-void gen_data(float bounds[8], int index, char cost_func)
+int gen_data(float bounds[8], int index, char cost_func)
 {
   string states_nm, parameters_nm, control_nm;
+  bool flag = false;
+
   USING_NAMESPACE_ACADO
 
   DifferentialState        q1,q2,qd1,qd2;   // the differential states
@@ -25,10 +27,12 @@ void gen_data(float bounds[8], int index, char cost_func)
   //  -------------------------------------
   OCP ocp( 0.0, 0.5 );
   switch(cost_func){
-    case 'a': ocp.minimizeMayerTerm(T*T + tau1*qd1*tau1*qd1 + tau2*qd2*tau2*qd2 + (1/(500*500-tau1*tau1)) + (1/(500*500-tau2*tau2)));
+    case 'a': ocp.minimizeMayerTerm(T*T + tau1*qd1*tau1*qd1 + tau2*qd2*tau2*qd2 + (1/(400*400-tau1*tau1)) + (1/(400*400-tau2*tau2)));
+              cout << "cost function = sq_power + inverse penalty " << endl;
               break;
 
-    default: ocp.minimizeMayerTerm(T*T + tau1*tau1 + tau2*tau2 + pow(E,INF*(tau1-500)) + pow(E,INF*(tau2-500)) + pow(E,-INF*(tau1+500)) + pow(E,-INF*(tau2+500)));
+    default: ocp.minimizeMayerTerm(T*T + pow(E,INF*(tau1-400)) + pow(E,INF*(tau2-400)) + pow(E,-INF*(tau1+400)) + pow(E,-INF*(tau2+400)));
+             cout << "cost function = sq_torque + exponential penalty " << endl;
   }
 
   f << dot(q1) == qd1;
@@ -73,6 +77,7 @@ void gen_data(float bounds[8], int index, char cost_func)
   diff = final_state - req_state;
 
   if ((diff.getNorm(VN_L2) < 0.001)&&(objVal>=0.0)){
+    flag = true;
     states_nm = "states_"+std::to_string(index)+".txt";
     parameters_nm = "parameters_"+std::to_string(index)+".txt";
     control_nm = "control_"+std::to_string(index)+".txt";
@@ -81,6 +86,7 @@ void gen_data(float bounds[8], int index, char cost_func)
     algorithm.getControls(control_nm.c_str());
   }
   clearAllStaticCounters();
+  return flag;
 }
 
 float rand_gen(float lim[2]) {
@@ -100,13 +106,16 @@ int main(int argc, const char * argv[]){
     cout << "Incorrect number of arguments." << endl;
   }
   else{
-    cout << "Using cost function " << *argv[1] << endl;
     int num_iter = atoi(argv[2]);
-    for(i=0; i<num_iter; i++){
+    i = 0;
+    while(i<num_iter){
       float bounds[8] = {rand_gen(q_lims),rand_gen(q_lims),rand_gen(qd_lims),rand_gen(qd_lims),rand_gen(q_lims),rand_gen(q_lims),rand_gen(qd_lims),rand_gen(qd_lims)};
       cout << i << endl;
       cout << bounds[0] << " " << bounds[1] << " " << bounds[2] << " " << bounds[3] << " " << bounds[4] << " " << bounds[5] << " " << bounds[6] << " " << bounds[7] << endl;
-      gen_data(bounds,i,*argv[2]);
+      bool success = gen_data(bounds,i,*argv[1]);
+      if(success){
+        i++;
+      }
     }
   }
   return 0;
