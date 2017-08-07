@@ -8,9 +8,9 @@ import numpy
 seed = 11
 numpy.random.seed(seed)
 
-data = numpy.loadtxt("../training_data/2_cost.txt",delimiter="\t")
+data = numpy.loadtxt("../training_data/2_control_data.txt",delimiter="\t")
 Xi= data[:,0:8] #input
-Yi = data[:,8:9] #output
+Yi = data[:,8:10] #output
 
 #standardization
 X = numpy.divide(Xi-Xi.mean(axis=0),Xi.std(axis=0))
@@ -21,7 +21,7 @@ def base_model():
     model = Sequential()
     model.add(Dense(7, input_dim=8,kernel_initializer='normal', activation='relu'))
     # model.add(Dense(8,kernel_initializer='normal', activation='relu'))
-    model.add(Dense(1, kernel_initializer='normal'))
+    model.add(Dense(2, kernel_initializer='normal'))
     model.compile(loss='mean_squared_error', optimizer='adam')
     return model
 

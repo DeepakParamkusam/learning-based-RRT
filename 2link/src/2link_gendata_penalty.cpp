@@ -2,10 +2,10 @@
 #include <string>
 #include <acado_toolkit.hpp>
 #include <acado_gnuplot.hpp>
+#include <cmath>
 
 #define pi 3.14159
 #define E 2.718
-#define INF 100000000
 
 using namespace std;
 
@@ -16,6 +16,7 @@ int gen_data(float bounds[8], int index, char cost_func)
 {
   string states_nm, parameters_nm, control_nm;
   bool flag = false;
+  double inf_val = 1.0e20;
 
   USING_NAMESPACE_ACADO
 
@@ -27,11 +28,11 @@ int gen_data(float bounds[8], int index, char cost_func)
   //  -------------------------------------
   OCP ocp( 0.0, 0.5 );
   switch(cost_func){
-    case 'a': ocp.minimizeMayerTerm(T*T + tau1*qd1*tau1*qd1 + tau2*qd2*tau2*qd2 + (1/(400*400-tau1*tau1)) + (1/(400*400-tau2*tau2)));
+    case 'a': ocp.minimizeMayerTerm(T*T + (1/(600*600-tau1*tau1)) + (1/(600*600-tau2*tau2)));
               cout << "cost function = sq_power + inverse penalty " << endl;
               break;
 
-    default: ocp.minimizeMayerTerm(T*T + pow(E,INF*(tau1-400)) + pow(E,INF*(tau2-400)) + pow(E,-INF*(tau1+400)) + pow(E,-INF*(tau2+400)));
+    default: ocp.minimizeMayerTerm(T*T + tau1*tau1 + tau2*tau2 + pow(E,inf_val*(tau1-600)) + pow(E,inf_val*(tau2-600)) + pow(E,-inf_val*(tau1+600)) + pow(E,-inf_val*(tau2+600)));
              cout << "cost function = sq_torque + exponential penalty " << endl;
   }
 
@@ -76,7 +77,8 @@ int gen_data(float bounds[8], int index, char cost_func)
   req_state(3)=bounds[7];
   diff = final_state - req_state;
 
-  if ((diff.getNorm(VN_L2) < 0.001)&&(objVal>=0.0)){
+  // if ((diff.getNorm(VN_L2) < 0.001)&&(objVal>=0.0)){
+  if (diff.getNorm(VN_L2) < 0.001){
     flag = true;
     states_nm = "states_"+std::to_string(index)+".txt";
     parameters_nm = "parameters_"+std::to_string(index)+".txt";
