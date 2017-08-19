@@ -7,11 +7,14 @@ Xi = data[:,0:8] #input
 Yi = data[:,8:10] #output
 
 #standardization
-X = numpy.divide(Xi-Xi.mean(axis=0),Xi.std(axis=0))
-Y = numpy.divide(Yi-Yi.mean(axis=0),Yi.std(axis=0))
+# X = numpy.divide(Xi-Xi.mean(axis=0),Xi.std(axis=0))
+# Y = numpy.divide(Yi-Yi.mean(axis=0),Yi.std(axis=0))
+X = numpy.divide(Xi-Xi.min(axis=0),Xi.max(axis=0)-Xi.min(axis=0))
+Y = numpy.divide(Yi-Yi.min(axis=0),Yi.max(axis=0)-Yi.min(axis=0))
 
 #split into training data and validation data
-num_data = int(len(X)/8.0)
+num_data = len(X)
+print num_data
 X_train = X[0:int(0.75*num_data),:]
 Y_train = Y[0:int(0.75*num_data),:]
 X_validate = X[int(0.75*num_data):num_data,:]

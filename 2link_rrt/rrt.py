@@ -2,9 +2,9 @@ import numpy
 import plant
 from sklearn.externals import joblib
 
-kNN_control = joblib.load('../2link_NN/trained_models/knn_control_2')
+kNN_control = joblib.load('../2link_NN/trained_models/knn_control_ft_2_10k')
 kNN_cost = joblib.load('../2link_NN/trained_models/knn_cost_2')
-control_training = numpy.loadtxt('../2link_NN/training_data/2_control_data.txt')
+control_training = numpy.loadtxt('../2link_NN/training_data/2_control_data_fulltraj.txt')
 cost_training = numpy.loadtxt('../2link_NN/training_data/2_cost.txt')
 # neigh_predict = joblib.load('../2link_NN/trained_models/knn_neigh_2')
 
@@ -37,8 +37,9 @@ def connectNodes(initialState, goalState):
 
 	finalCost = cost_ann
 	finalCostate = costates_ann
+	# print finalCostate
 	#REWRITE THIS FUNC
-	finalState = plant.plantRRTSimulate1(initialState, finalCostate.ravel(),0.5/20) ###REWRITE THIS
+	finalState = plant.RK4Simulate(initialState, finalCostate.ravel())
 
 	# Connection validity already established earlier.
 	stateError = numpy.linalg.norm(finalState - goalState)
