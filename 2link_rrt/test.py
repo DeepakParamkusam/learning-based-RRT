@@ -18,13 +18,13 @@ iState[2] = -0.212169647216797
 iState[3] = -11.7048187255859
 
 # testNode = rrt.TreeNode()
-modelP = rrt.modelPredict(iState,fState)
+# modelP = rrt.modelPredict(iState,fState)
 # gr = rrt.goalReached(iState,fState)
-# samp_node = rrt.sampleState(4,STATE_RANGE,fState,0.15)
+samp_node = rrt.sampleState(4,STATE_RANGE,fState,0.15)
 #
 # c = np.hstack((np.vstack((samp_node,samp_node)),np.vstack((iState,fState))))
-# neighP = rrt.neighPredict(c)
+neighP = rrt.findNearestNeighbor(iState,samp_node)
 # print control[0,:]
-# a = rrt.connectNodes(samp_node,fState[0])
+# a = rrt.connectNodes(samp_node,fState)
 # a = plant.RK4Simulate(iState,control)
-print modelP[1][0][0]
+print neighP[2]

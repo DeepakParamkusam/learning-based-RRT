@@ -1,5 +1,16 @@
 import rrt
 import time
+import numpy as np
+
+NUM_PLANNING_ATTEMPTS = 1
+START_STATE	= np.array([0.,0.,0.,0.])
+GOAL_STATE	= np.array([np.pi,0.,0.,0.])
+NUM_NODES	= 10000
+STATE_DIMENSION = 4
+STATE_RANGE = np.array([[-3/2*np.pi,-3/2*np.pi,-np.pi,-np.pi],[np.pi,np.pi,np.pi,np.pi]])
+COSTATE_RANGE = np.array([[-np.pi/2+0.01,-np.pi/2+0.01,-np.pi/2+0.01,-np.pi/2+0.01],[np.pi*3/2-0.01,np.pi*3/2-0.01,np.pi*3/2-0.01,np.pi*3/2-0.01]])
+PHI_RANGE = np.array([[-np.pi/2+0.01,-np.pi/2+0.01,-np.pi/2+0.01],[3*np.pi/2-0.01,3*np.pi/2-0.01,3*np.pi/2-0.01]])
+GOAL_TOLERANCE 	= 0.15
 
 if __name__ == "__main__":
 	planning_timeout = 0
@@ -21,12 +32,13 @@ if __name__ == "__main__":
 
 		pInit = START_STATE
 		nodeList = pInit
+		# nodeList = np.reshape(nodeList,[1,4])
 
 		# Convert goal state from state space to phase space.
 		pGoal = GOAL_STATE
 
 		# Construct the starting node
-		newTreeNode = TreeNode()
+		newTreeNode = rrt.TreeNode()
 		newTreeNode.parentNode = pInit
 		newTreeNode.childNode  = pInit
 		newTreeNode.costToGo = 0.0
@@ -44,16 +56,16 @@ if __name__ == "__main__":
 		idx = 2
 
 		for idx in range(NUM_NODES):
-			newTreeNode = TreeNode()
+			newTreeNode = rrt.TreeNode()
 			# Find the nearest neighbour to connect to
 			foundValidPrediction = False
 			while foundValidPrediction == False:
 				# Sample a new random state from state space.
-				rState = sampleState(STATE_DIMENSION, STATE_RANGE,GOAL_STATE,GOAL_TOLERANCE)
+				rState = rrt.sampleState(STATE_DIMENSION, STATE_RANGE,GOAL_STATE,GOAL_TOLERANCE)
 
 				# Find the nearest neighbor
 				newTreeNode.parentNode, newTreeNode.costToGo, foundValidPrediction = \
-					findNearestNeighbor(nodeList,rState)
+					rrt.findNearestNeighbor(nodeList,rState)
 			# If the new state is within tolerance of the goal
 			if np.linalg.norm(rState - pGoal) < GOAL_TOLERANCE :
 				# TODO: what is happening here?
@@ -64,14 +76,14 @@ if __name__ == "__main__":
 
 			# Connect the neighbor to the node
 			newTreeNode.childNode, newTreeNode.coState, newTreeNode.costToGo, connectionValid = \
-				connectNodes(newTreeNode.parentNode, rState, randomFactorCurrent)
+				rrt.connectNodes(newTreeNode.parentNode, rState)
 			if connectionValid:
 				# Add the node to the tree
 				treeNodes.append(newTreeNode)
 				# Add the new node to the list of available nodes
 				nodeList = np.vstack((nodeList, newTreeNode.childNode))
 
-				goalReach = goalReached(newTreeNode.childNode, pGoal)
+				goalReach = rrt.goalReached(newTreeNode.childNode, pGoal)
 				if goalReach:
 					print "final node: ",newTreeNode.childNode
 					time2 = time.time()
