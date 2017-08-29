@@ -8,7 +8,7 @@ control_training = numpy.loadtxt('../2link_NN/training_data/2_control_data_fullt
 cost_training = numpy.loadtxt('../2link_NN/training_data/2_cost_10k.txt')
 
 NUMBER_OF_NEIGHBOURS = 3
-NEIGHBOUR_BOUND = 100
+NEIGHBOUR_BOUND = 15
 STATE_DIMENSION = 4
 
 class TreeNode(object):
@@ -45,19 +45,20 @@ def connectNodes(initialState, goalState):
 
 	finalCost = cost_ann
 	finalCostate = costates_ann
-	print finalCostate
+	# print finalCostate
 	# print finalCostate
 	finalState = plant.RK4Simulate(initialState, finalCostate)
 
 	# Connection validity already established earlier.
 	stateError = numpy.linalg.norm(finalState - goalState)
+	# print stateError
 
-	a = finalState / numpy.linalg.norm(finalState)
-	b = goalState  / numpy.linalg.norm(goalState)
+	a = finalState/numpy.linalg.norm(finalState)
+	b = goalState/numpy.linalg.norm(goalState)
 	angle = numpy.arccos(numpy.clip(numpy.dot(a.ravel(),b.ravel()),-1.,1.))
 	if stateError < 1:
 		print "angle: ",numpy.degrees(angle),"\terror: ",stateError
-	if stateError < 0.3 and numpy.degrees(angle) < 0.5:
+	if stateError < .3 and numpy.degrees(angle) < 0.5:
 		connectionValid = True
 	else:
 		connectionValid = False
@@ -73,6 +74,7 @@ def sampleState(stateDim,stateRange,goalState,goalTolerance):
 		rState 	= goalState + numpy.random.uniform(-goalTolerance,goalTolerance,stateDim)
 	# Return the full random state
 	return rState
+	# return numpy.ones(4)
 
 # Sort only valid values from an array containing invalid values,
 # return the original location of indices without altering original array size.
@@ -93,11 +95,10 @@ def findNearestNeighbor(nodeList, rState):
 	# Filter out nodes that would lead to invalid prediction based on nearest neighbors.
 	# This means, the randomly sampled node is too far from the trained model.
 	allPredictions = neighPredict(allData)
-	# print allPredictions
 
 	# Locate all nodes that would lead to valid predictions.
-	validNodes = allPredictions[:,0] < NEIGHBOUR_BOUND
-	print validNodes
+	validNodes = allPredictions[0] < NEIGHBOUR_BOUND
+	# print validNodes
 
 	# Nodes that lead to valid predictions exist, continue further.
 	if validNodes.any():

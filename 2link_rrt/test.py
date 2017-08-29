@@ -27,4 +27,4 @@ neighP = rrt.findNearestNeighbor(iState,samp_node)
 # print control[0,:]
 # a = rrt.connectNodes(samp_node,fState)
 # a = plant.RK4Simulate(iState,control)
-print neighP[2]
+# print neighP[0]
