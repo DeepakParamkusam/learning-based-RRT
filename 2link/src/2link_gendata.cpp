@@ -2,15 +2,19 @@
 #include <string>
 #include <acado_toolkit.hpp>
 #include <acado_gnuplot.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
 
 #define pi 3.14159
 
 using namespace std;
 
-int gen_data(float bounds[8],int index, char cost_func);
-float rand_gen(float min, float max);
+static boost::random::mt19937 gen;
 
-int gen_data(float bounds[8], int index, char cost_func)
+int gen_data(float bounds[8],int index, char cost_func, int thread);
+float rand_gen(float lim[2]);
+
+int gen_data(float bounds[8], int index, char cost_func, int thread)
 {
   std::string states_nm, parameters_nm, control_nm;
   bool flag = false;
@@ -76,9 +80,9 @@ int gen_data(float bounds[8], int index, char cost_func)
 
   if (diff.getNorm(VN_L2) < 0.001){
     flag = true;
-    states_nm = "states_"+std::to_string(index)+".txt";
-    parameters_nm = "parameters_"+std::to_string(index)+".txt";
-    control_nm = "control_"+std::to_string(index)+".txt";
+    states_nm = "states_"+to_string(index)+"_"+to_string(thread)+".txt";
+    parameters_nm = "parameters_"+to_string(index)+"_"+to_string(thread)+".txt";
+    control_nm = "control_"+to_string(index)+"_"+to_string(thread)+".txt";
     algorithm.getDifferentialStates(states_nm.c_str());
     algorithm.getObjectiveValue(parameters_nm.c_str());
     algorithm.getControls(control_nm.c_str());
@@ -88,29 +92,28 @@ int gen_data(float bounds[8], int index, char cost_func)
 }
 
 float rand_gen(float lim[2]) {
-    float random = ((float) rand()) / (float) RAND_MAX;
-    float diff = lim[1] - lim[0];
-    float r = random * diff;
-    return lim[0] + r;
+    static boost::random::uniform_real_distribution<> dist(0, 1);
+    return lim[0] + dist(gen)*(lim[1] - lim[0]);
 }
 
 int main(int argc, const char * argv[]){
-  srand (time(NULL));
+  // srand (time(NULL));
   int i;
   float q_lims[2] = {0.0,2*pi};
   float qd_lims[2] = {-30.0,30.0};
 
-  if(argc!=3){
+  if(argc!=4){
     cout << "Incorrect number of arguments." << endl;
   }
   else{
     int num_iter = atoi(argv[2]);
+    gen.seed(time(0) + atoi(argv[3]));
     i = 0;
     while(i<num_iter){
       float bounds[8] = {rand_gen(q_lims),rand_gen(q_lims),rand_gen(qd_lims),rand_gen(qd_lims),rand_gen(q_lims),rand_gen(q_lims),rand_gen(qd_lims),rand_gen(qd_lims)};
       cout << i << endl;
       cout << bounds[0] << " " << bounds[1] << " " << bounds[2] << " " << bounds[3] << " " << bounds[4] << " " << bounds[5] << " " << bounds[6] << " " << bounds[7] << endl;
-      bool success = gen_data(bounds,i,*argv[1]);
+      bool success = gen_data(bounds,i,*argv[1],atoi(argv[3]));
       if(success){
         i++;
       }

@@ -1,33 +1,27 @@
 from keras.models import Sequential
 from keras.layers import Dense
 import numpy
+from sklearn.externals import joblib
+from numpy.random import seed
+seed(1)
+from tensorflow import set_random_seed
+set_random_seed(2)
 
-data = numpy.loadtxt("../training_data/2_control_data_fulltraj_10k.txt",delimiter="\t")
-Xi = data[:,0:8] #input
-Yi = data[:,8:48] #output
+data = "../training_data/control_ft_2_10k_scaled"
 
-#standardization
-X = numpy.divide(Xi-Xi.mean(axis=0),Xi.std(axis=0))
-Y = numpy.divide(Yi-Yi.mean(axis=0),Yi.std(axis=0))
-
-#split into training data and validation data
-num_data = len(X)
-# print len(X)
-X_train = X[0:int(0.9*num_data),:]
-Y_train = Y[0:int(0.9*num_data),:]
-X_validate = X[int(0.9*num_data):num_data,:]
-Y_validate = Y[int(0.9*num_data):num_data,:]
+#load data
+X_train,Y_train,X_validate,Y_validate,coeff = joblib.load(data)
+print X_train.shape
 
 # create NN
 model = Sequential()
-model.add(Dense(24, input_dim=8, activation='relu'))
-# model.add(Dense(12, activation='relu'))
-# model.add(Dense(6, activation='relu'))
+model.add(Dense(8, input_dim=8, activation='relu'))
 model.add(Dense(40,activation='relu'))
 model.compile(loss='mean_squared_error', optimizer='adam',metrics=['accuracy'])
 
-model.fit(X_train, Y_train, epochs=150, batch_size=10)
+model.fit(X_train, Y_train, epochs=150, batch_size=904)
 
 scores = model.evaluate(X_validate, Y_validate)
 print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
-# model.save('../trained_models/NN_control_2_H24_ft_10k')
+
+model.save('../trained_models/NN_control_H8')
