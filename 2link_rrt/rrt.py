@@ -2,10 +2,11 @@ import numpy
 import plant
 from sklearn.externals import joblib
 
-kNN_control = joblib.load('../2link_NN/trained_models/knn_control_ft_2_10k_test')
-kNN_cost = joblib.load('../2link_NN/trained_models/knn_cost_2_10k')
-control_training = numpy.loadtxt('../2link_NN/training_data/2_control_data_fulltraj_10k.txt')
-cost_training = numpy.loadtxt('../2link_NN/training_data/2_cost_10k.txt')
+kNN_control = joblib.load('../2link_NN/trained_models/knn_control_ft_2_10k_scaled')
+kNN_cost = joblib.load('../2link_NN/trained_models/knn_cost_2_10k_scaled')
+xt,yt,xv,yv,control_coeff = joblib.load('../2link_NN/training_data/control_ft_2_10k_scaled')
+xt,ytc, xv, yvc, cost_coeff = joblib.load('../2link_NN/training_data/cost_2_10k_scaled')
+cost_training = numpy.loadtxt('../2link_NN/training_data/raw/2_cost_10k.txt')
 
 NUMBER_OF_NEIGHBOURS = 3
 NEIGHBOUR_BOUND = 15
@@ -27,26 +28,27 @@ def neighPredict(Xdata):
 
 def modelPredict(initialState,goalState):
 	inp = numpy.hstack((initialState,goalState))
-	input2NN = numpy.divide(inp - kNN_control[1][0],kNN_control[1][1])
+	input2NN = numpy.divide(inp - cost_coeff[0],cost_coeff[1])
+	input2NN = input2NN.reshape(1,-1)
 
 	predicted_cost = kNN_cost.predict(input2NN)
-	predicted_control = kNN_control[0].predict(input2NN)
+	predicted_control = kNN_control.predict(input2NN)
 
-	predicted_cost = predicted_cost[0]*kNN_control[1][1] + kNN_control[1][0]
-	predicted_control = predicted_control[0]*kNN_control[1][3] + kNN_control[1][2]
+	predicted_cost = predicted_cost[0]*cost_coeff[3] + cost_coeff[2]
+	predicted_control = predicted_control[0]*control_coeff[3] + control_coeff[2]
 	predicted_control = numpy.transpose(numpy.vstack([predicted_control[0:20],predicted_control[20:40]]))
 
 	return (predicted_cost,predicted_control)
 
-def connectNodes(initialState, goalState):
+def connectNodes(initialState, goalState,randomFactor):
 	connectionValid = False
 	# Predict cost to go and input.
 	cost_ann,costates_ann  = modelPredict(initialState, goalState)
 
-	finalCost = cost_ann
-	finalCostate = costates_ann
-	# print finalCostate
-	# print finalCostate
+	# finalCost = cost_ann
+	# finalCostate = costates_ann
+	finalCost = (cost_ann + randomFactor*numpy.random.uniform(0,1))/(1+randomFactor)
+	finalCostate = (costates_ann+randomFactor*numpy.random.uniform(0,2*numpy.pi)) / (1+randomFactor)
 	finalState = plant.RK4Simulate(initialState, finalCostate)
 
 	# Connection validity already established earlier.
@@ -56,9 +58,9 @@ def connectNodes(initialState, goalState):
 	a = finalState/numpy.linalg.norm(finalState)
 	b = goalState/numpy.linalg.norm(goalState)
 	angle = numpy.arccos(numpy.clip(numpy.dot(a.ravel(),b.ravel()),-1.,1.))
-	if stateError < 1:
+	if stateError < 5:
 		print "angle: ",numpy.degrees(angle),"\terror: ",stateError
-	if stateError < .3 and numpy.degrees(angle) < 0.5:
+	if stateError < 5 and numpy.degrees(angle) < 20:
 		connectionValid = True
 	else:
 		connectionValid = False
@@ -127,7 +129,7 @@ def findNearestNeighbor(nodeList, rState):
 
 def goalReached(currentState, goalState):
 	distanceToGoal = numpy.linalg.norm(currentState-goalState)
-	if distanceToGoal < 0.2:
+	if distanceToGoal < 5:
 		return True
 	else:
 		return False

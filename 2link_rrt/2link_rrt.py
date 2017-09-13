@@ -6,7 +6,7 @@ NUM_PLANNING_ATTEMPTS = 1
 START_STATE	= np.array([0.,0.,0.,0.])
 GOAL_STATE	= np.array([np.pi,0.,0.,0.])
 # GOAL_STATE	= np.array([1.,1.,1.,1.])
-NUM_NODES	= 10000
+NUM_NODES	= 100
 STATE_DIMENSION = 4
 STATE_RANGE = np.array([[0,0,-30,-30],[2*np.pi,2*np.pi,30,30]])
 GOAL_TOLERANCE 	= 15
@@ -43,14 +43,15 @@ if __name__ == "__main__":
 
 		# Set randomization parameter
 		# TODO: What is this?
-		# randomFactorAny = 0.2
-		# randomFactorGoal = 0.2
+		randomFactorAny = 0.2
+		randomFactorGoal = 0.2
 
 		# Build the RRT until goal is reached or max number of nodes are reached
 		time1 = time.time()
 		idx = 2
 
 		for idx in range(NUM_NODES):
+			# print idx
 			newTreeNode = rrt.TreeNode()
 			# Find the nearest neighbour to connect to
 			foundValidPrediction = False
@@ -63,16 +64,16 @@ if __name__ == "__main__":
 					rrt.findNearestNeighbor(nodeList,rState)
 
 			# If the new state is within tolerance of the goal
-			# if np.linalg.norm(rState - pGoal) < GOAL_TOLERANCE :
-			# 	# TODO: what is happening here?
-			# 	randomFactorGoal = randomFactorGoal + 0.5
-			# 	randomFactorCurrent = randomFactorGoal
-			# else:
-			# 	randomFactorCurrent = randomFactorAny
+			if np.linalg.norm(rState - pGoal) < GOAL_TOLERANCE :
+				# TODO: what is happening here?
+				randomFactorGoal = randomFactorGoal + 0.5
+				randomFactorCurrent = randomFactorGoal
+			else:
+				randomFactorCurrent = randomFactorAny
 
 			# Connect the neighbor to the node
 			newTreeNode.childNode, newTreeNode.coState, newTreeNode.costToGo, connectionValid = \
-				rrt.connectNodes(newTreeNode.parentNode, rState)
+				rrt.connectNodes(newTreeNode.parentNode, rState,randomFactorCurrent)
 			if connectionValid:
 				print idx
 				# Add the node to the tree
@@ -113,4 +114,4 @@ if __name__ == "__main__":
 					# 	srcDst2 = np.array([completePath[pathLength-1][1],completePath[pathLength-2][1]])
 					# 	pathLength = pathLength - 1
 					#
-					# break
+					break

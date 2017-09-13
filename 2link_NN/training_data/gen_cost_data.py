@@ -1,11 +1,11 @@
 import numpy
 from sklearn.externals import joblib
 
-data = numpy.loadtxt("raw/2_cost_10k.txt",delimiter="\t")
+data = numpy.loadtxt("raw/2_cost_10k_clean.txt",delimiter="\t")
 Xi = data[:,0:8] #input
 Yi = data[:,8:9] #output
 
-flag = 2
+flag = 1
 
 if flag == 1:
     #Scaling
@@ -16,6 +16,7 @@ if flag == 1:
     Y_a = Yi.min(axis=0)
     Y_b = Yi.max(axis=0)-Yi.min(axis=0)
     file_name = 'cost_2_10k_scaled'
+    print 'Scaled cost data generated'
 else:
     #Standardization
     X = numpy.divide(Xi-Xi.mean(axis=0),Xi.std(axis=0))
@@ -25,6 +26,7 @@ else:
     Y_a = Yi.mean(axis=0)
     Y_b = Yi.std(axis=0)
     file_name = 'cost_2_10k_std'
+    print 'Standardized cost data generated'
 
 #Split into training data and validation data 9:1
 num_data = len(X)

@@ -1,7 +1,7 @@
 import numpy
 from sklearn.externals import joblib
 
-data = numpy.loadtxt("raw/2_control_data_fulltraj_10k.txt",delimiter="\t")
+data = numpy.loadtxt("raw/2_control_data_fulltraj_10k_clean.txt",delimiter="\t")
 Xi = data[:,0:8] #input
 Yi = data[:,8:48] #output
 
@@ -16,6 +16,7 @@ if flag == 1:
     Y_a = Yi.min(axis=0)
     Y_b = Yi.max(axis=0)-Yi.min(axis=0)
     file_name = 'control_ft_2_10k_scaled'
+    print 'Scaled control data generated'
 else:
     #Standardization
     X = numpy.divide(Xi-Xi.mean(axis=0),Xi.std(axis=0))
@@ -25,6 +26,7 @@ else:
     Y_a = Yi.mean(axis=0)
     Y_b = Yi.std(axis=0)
     file_name = 'control_ft_2_10k_std'
+    print 'Standardized control data generated'
 
 #Split into training data and validation data 9:1
 num_data = len(X)
