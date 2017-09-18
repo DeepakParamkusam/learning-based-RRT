@@ -3,6 +3,7 @@ if [ "$#" -eq 1 ] && [ -d "$1" ]; then
 	for file in "$1"/states_*.txt; do
 		file_no=${file//[^0-9]/}
 		if [ ! -f "$1"/states_$file_no.txt ] || [ ! -f "$1"/parameters_$file_no.txt ]; then
+			echo "Incompletete sample" $file_no
 			continue
 		fi
 		cat "$1"/states_$file_no.txt | tr -d '[]' | tr -s ' ' '\t' | tee >(head -n1 | cut -f3- >> temp1) | tail -n1 | cut -f3- >>temp2

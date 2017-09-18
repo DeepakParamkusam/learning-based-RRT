@@ -20,7 +20,7 @@ else:
     print 'Incorrect no. of arguments'
     exit()
 
-data = '../training_data/cost_2_' + num_data + 'k_scaled'
+data = '../training_data/cost_2_' + num_data + 'k_scaled_log'
 
 #load data
 X_train,Y_train,X_validate,Y_validate,coeff = joblib.load(data)
@@ -33,7 +33,7 @@ if len(sys.argv) == 4:
 model.add(Dense(1,activation='relu'))
 model.compile(loss='mean_squared_error', optimizer='adam',metrics=['accuracy'])
 
-model.fit(X_train, Y_train, epochs=150, batch_size=902)
+model.fit(X_train, Y_train, epochs=1500, batch_size=771)
 
 scores = model.evaluate(X_validate, Y_validate)
 print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))

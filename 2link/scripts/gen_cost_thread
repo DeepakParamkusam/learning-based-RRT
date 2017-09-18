@@ -1,0 +1,14 @@
+#!/bin/bash
+if [ "$#" -eq 2 ] && [ -d "$1" ]; then
+	for file in "$1"/states_*_$2.txt; do
+		file_no=${file//[^0-9]/}
+		if [ ! -f "$1"/states_${file_no}_$2.txt ] || [ ! -f "$1"/parameters_${file_no}_$2.txt ]; then
+			continue
+		fi
+		cat "$1"/states_${file_no}_$2.txt | tr -d '[]' | tr -s ' ' '\t' | tee >(head -n1 | cut -f3- >> temp1) | tail -n1 | cut -f3- >>temp2
+		cat "$1"/parameters_${file_no}_$2.txt | cut -f1 >> temp3
+	done
+	paste temp1 temp2 temp3 | cut -f1-4,6-9,11 > "$1"/sorted/cost_$2.txt
+	rm temp1 temp2 temp3
+	echo "Cost data generated for thread" $2 
+fi

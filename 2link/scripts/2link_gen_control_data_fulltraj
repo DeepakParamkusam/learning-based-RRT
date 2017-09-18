@@ -13,5 +13,5 @@ if [ "$#" -eq 1 ] && [ -d "$1" ]; then
 		paste temp1 temp2 temp3 temp4 | tr -s "\t" | head -c -2 >> "$1"/sorted/control_data.txt && echo >> "$1"/sorted/control_data.txt
 	done
 	rm temp1 temp2 temp3 temp4
-	echo "Control data generated hoohoo"
+	echo "Control data generated"
 fi
