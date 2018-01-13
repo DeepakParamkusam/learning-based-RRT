@@ -75,7 +75,7 @@ int main(){
   bool ok = algorithm->solve(); 
                          // solves the problem.
   *algorithm << window;
-  if (ok == false){
+  if (ok == 0){
     cout << "SUCCESS!";
     algorithm->getDifferentialStates("states.txt");
     algorithm->getObjectiveValue("parameters.txt");

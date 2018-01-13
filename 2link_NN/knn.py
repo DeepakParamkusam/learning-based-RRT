@@ -8,37 +8,38 @@ from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 
 #INDIRECT CONS
-# x = np.loadtxt('../../training_data/clean_indirect/X100kc.txt',delimiter=',')
-# y = np.loadtxt('../../training_data/clean_indirect/Y100kc.txt',delimiter=',')
+# x = np.loadtxt('../training_data/clean_indirect/X100kc.txt',delimiter=',')
+# y = np.loadtxt('../training_data/clean_indirect/Y100kc.txt',delimiter=',')
 
 #INDIRECT UNCONS
-# x = np.loadtxt('../../training_data/clean_indirect/X100k.txt',delimiter=',')
-# y = np.loadtxt('../../training_data/clean_indirect/Y100k.txt',delimiter=',')
+# x = np.loadtxt('../training_data/clean_indirect/X100k.txt',delimiter=',')
+# y = np.loadtxt('../training_data/clean_indirect/Y100k.txt',delimiter=',')
 
 #FOR INDIRECT
 # y_cost = y[:,0]
 # y_control = y[:,1:]
 
 #DIRECT UNCONS
-# data = np.loadtxt('../../training_data/clean_direct/control_100k_clean_4.txt')
-# data = np.loadtxt('../../training_data/clean_direct/cost_100k_clean_4.txt')
+# data = np.loadtxt('../training_data/clean_direct/control_100k_clean_4.txt')
+# data = np.loadtxt('../training_data/clean_direct/cost_100k_clean_4.txt')
 
 #DIRECT CONS
-# data = np.loadtxt('../../training_data/raw/control_data_100k.txt')
-# data = np.loadtxt('../../training_data/corrected_clean_data/2_costr_100k_clean_7.txt')
+# data = np.loadtxt('../training_data/raw/control_data_100k.txt')
+# data = np.loadtxt('../training_data/corrected_clean_data/2_costr_100k_clean_7.txt')
 
 #NEW DIRECT
-data = np.loadtxt('../../cost_lagrange_uncons.txt',delimiter=',')
+# data = np.loadtxt('../training_data/clean_direct/cost_jan12.txt')
+data = np.loadtxt('../training_data/clean_direct/control_data_jan12.txt')
 
 #FOR DIRECT
 x = data[:,0:8]
-y_cost = data[:,8]
-# y_control = data[:,8:]
+# y_cost = data[:,8]
+y_control = data[:,8:]
 
 #SCALING
-y_cost = y_cost.reshape(-1,1)
+# y_cost = y_cost.reshape(-1,1)
 YscaledFlag = True #false if y is not to be scaled
-x_t, x_v, y_t, y_v = train_test_split(x, y_cost, test_size=0.1, random_state = 42)
+x_t, x_v, y_t, y_v = train_test_split(x, y_control, test_size=0.1, random_state = 42)
 
 xscaler = StandardScaler()
 yscaler = StandardScaler()
@@ -52,8 +53,8 @@ if YscaledFlag == True:
 	y_t = yscaler.transform(y_t)
 	y_v = yscaler.transform(y_v)
 
-#MSE AND PREDICTION PROFILE
-knn = neighbors.KNeighborsRegressor(7, weights='uniform')
+#MSE AND PREDICTION PROFILE k=11 (control) k=8(cost) 
+knn = neighbors.KNeighborsRegressor(11, weights='uniform')
 predicted = cross_val_predict(knn, x_t, y_t,cv=10)
 scores = cross_val_score(knn, x_t, y_t,cv=10,scoring='neg_mean_squared_error')
 print -scores.mean() 

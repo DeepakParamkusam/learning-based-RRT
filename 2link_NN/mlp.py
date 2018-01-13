@@ -31,15 +31,18 @@ import matplotlib.pyplot as plt
 # data = np.loadtxt('../../cost_lagrange_uncons.txt',delimiter=',')
  
 # data = np.loadtxt('../../control_lagrange_uncons.txt',delimiter=',')
+#NEW DIRECT
+data = np.loadtxt('../training_data/clean_direct/cost_jan12_clean.txt',delimiter=',')
+# data = np.loadtxt('../training_data/clean_direct/control_jan12_clean.txt',delimiter=',')
 
 x = data[:,0:8]
-# y_cost = data[:,8]
-y_control = data[:,8:48]
+y_cost = data[:,8]
+# y_control = data[:,8:48]
 
-# y_cost = y_cost.reshape(-1,1)
+y_cost = y_cost.reshape(-1,1)
 YscaledFlag = False
 
-x_t, x_v, y_t, y_v = train_test_split(x, y_control, test_size=0.1, random_state = 42)
+x_t, x_v, y_t, y_v = train_test_split(x, y_cost, test_size=0.1, random_state = 42)
 
 xscaler = StandardScaler()
 yscaler = StandardScaler()
@@ -67,20 +70,6 @@ print "mse =", mse
 fig, ax = plt.subplots()
 ax.scatter(y_v, pred, edgecolors=(0, 0, 0))
 ax.plot([y_v.min(), y_v.max()], [y_v.min(), y_v.max()], 'k--', lw=4)
-ax.set_xlabel('Actual control')
-ax.set_ylabel('Predicted control')
+ax.set_xlabel('Actual cost')
+ax.set_ylabel('Predicted cost')
 plt.show()
-
-def scale_data(Xi,Yi):
-    #Scaling
-    X = numpy.divide(Xi-Xi.min(axis=0),Xi.max(axis=0)-Xi.min(axis=0))
-    Y = numpy.divide(Yi-Yi.min(axis=0),Yi.max(axis=0)-Yi.min(axis=0))
-    X_a = Xi.min(axis=0)
-    X_b = Xi.max(axis=0)-Xi.min(axis=0)
-    Y_a = Yi.min(axis=0)
-    Y_b = Yi.max(axis=0)-Yi.min(axis=0)
-
-    return X,Y,X_a,X_b,Y_a,Y_b
-
-
-
