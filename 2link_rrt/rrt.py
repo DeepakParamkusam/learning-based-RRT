@@ -2,14 +2,11 @@ import numpy
 import plant
 from sklearn.externals import joblib
 
-kNN_control = joblib.load('../2link_NN/trained_models/knn_control_ft_2_10k_scaled')
-kNN_cost = joblib.load('../2link_NN/trained_models/knn_cost_2_10k_scaled')
-xt,yt,xv,yv,control_coeff = joblib.load('../2link_NN/training_data/control_ft_2_10k_scaled')
-xt,ytc, xv, yvc, cost_coeff = joblib.load('../2link_NN/training_data/cost_2_10k_scaled')
-cost_training = numpy.loadtxt('../2link_NN/training_data/raw/2_cost_10k.txt')
+kNN_control = joblib.load('../2link_NN/trained_models/knn/control/knn_control_ft_2_100k_scaled_5_9')
+kNN_cost = joblib.load('../2link_NN/trained_models/knn/cost/knn_cost_2_100k_scaled_5_9')
 
 NUMBER_OF_NEIGHBOURS = 3
-NEIGHBOUR_BOUND = 15
+NEIGHBOUR_BOUND = 5
 STATE_DIMENSION = 4
 
 class TreeNode(object):
@@ -58,9 +55,9 @@ def connectNodes(initialState, goalState,randomFactor):
 	a = finalState/numpy.linalg.norm(finalState)
 	b = goalState/numpy.linalg.norm(goalState)
 	angle = numpy.arccos(numpy.clip(numpy.dot(a.ravel(),b.ravel()),-1.,1.))
-	if stateError < 5:
+	if stateError < 2:
 		print "angle: ",numpy.degrees(angle),"\terror: ",stateError
-	if stateError < 5 and numpy.degrees(angle) < 20:
+	if stateError < 2 and numpy.degrees(angle) < 30:
 		connectionValid = True
 	else:
 		connectionValid = False
@@ -82,6 +79,7 @@ def sampleState(stateDim,stateRange,goalState,goalTolerance):
 # return the original location of indices without altering original array size.
 def sparse_argsort(arr, validNodes):
 	indices = numpy.where(validNodes)[0].flatten()
+	# print indices
 	return indices[numpy.argsort(arr[indices])]
 
 def findNearestNeighbor(nodeList, rState):
@@ -129,7 +127,7 @@ def findNearestNeighbor(nodeList, rState):
 
 def goalReached(currentState, goalState):
 	distanceToGoal = numpy.linalg.norm(currentState-goalState)
-	if distanceToGoal < 5:
+	if distanceToGoal < 1:
 		return True
 	else:
 		return False

@@ -1,0 +1,31 @@
+knn-indirect-unconstrained
+cost:k=2, error at 2 = 0.194
+contril:k=6, error at 6 = 0.8213
+
+knn-indirect-constrained
+cost:k=2, error at 2 = 0.299
+contril:k=6, error at 6 = 0.8043
+
+knn-direct-constrained
+cost:k=2, error at 2 = 0.965
+contril:k=6, error at 6 = 0.749
+
+knn-direct-unconstrained
+cost:k=2, error at 2 = 0.989
+contril:k=6, error at 6 = 0.7813
+
+mlp-indirect-unconstrained
+cost: H20=0.3439 H50=0.1626 H100=0.1563 H100H100=0.0353 H100H50=0.02836 H100H20=0.05893
+control: H100H20=0.7554 H100H50= 0.7432 H100H100=0.7207
+
+mlp-indirect-constrained
+control: H100=0.7859 H100H20=0.7548 H100H50=0.7438 H100H100=0.7148
+cost: H100H100=0.0134 H100H30=0.022
+
+mlp-direct-unconstrained
+control: H100=0.3754 H75=0.37611
+cost: H100H100=0.399 H100H50=0.3845 H100H40=0.37431
+
+mlp-direct-constrained
+control: H100=0.333776 H80=0.3742 H50=0.3719 H40=0.3791 
+cpst: H40=0.5341 H50=0.5020 H60=0.5106

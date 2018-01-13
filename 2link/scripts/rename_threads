@@ -1,8 +1,0 @@
-#!/bin/bash
-
-cd "$1"
-thread=$2
-
-for f in *.txt; do
-  mv "$f" "${f::(-6)}_$thread.txt"
-done

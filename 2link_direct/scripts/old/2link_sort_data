@@ -1,0 +1,12 @@
+#!/bin/bash
+if [ "$#" -eq 1 ] && [ -d "$1" ]; then
+	mkdir "$1"/sorted/
+	for file in "$1"/control_*.txt; do
+		[ -f $file ] || continue #checking existence of file
+		file_no=${file//[^0-9]/}
+		paste "$1"/states_$file_no.txt "$1"/control_$file_no.txt > temp
+		cat temp | tr -d '[]' | tr -s ' ' '\t' | cut -f2-6,8-9,11 > "$1"/sorted/data_$file_no.txt
+	done
+	rm temp
+	echo "Sorted"
+fi

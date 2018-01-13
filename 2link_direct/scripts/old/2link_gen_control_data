@@ -1,0 +1,15 @@
+#!/bin/bash
+if [ "$#" -eq 1 ] && [ -d "$1" ]; then
+	mkdir "$1"/sorted/
+	for file in "$1"/control_*.txt; do
+		file_no=${file//[^0-9]/}
+		if [ ! -f "$1"/states_$file_no.txt ] || [ ! -f "$1"/parameters_$file_no.txt ]; then
+			continue
+		fi
+		cat "$1"/states_$file_no.txt | tr -d '[]' | tr -s ' ' '\t' | cut -f3- | tee >(head -n -1 > temp1) | tail -n +2 > temp2
+		cat "$1"/control_$file_no.txt | tr -d '[]' | tr -s ' ' '\t' | cut -f3- | head -n -1 > temp3
+		paste temp1 temp2 temp3 | cut -f 1-4,6-9,11-12 >> "$1"/sorted/control_data.txt
+	done
+	rm temp1 temp2 temp3
+	echo "Control data generated"
+fi

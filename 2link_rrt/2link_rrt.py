@@ -9,7 +9,7 @@ GOAL_STATE	= np.array([np.pi,0.,0.,0.])
 NUM_NODES	= 100
 STATE_DIMENSION = 4
 STATE_RANGE = np.array([[0,0,-30,-30],[2*np.pi,2*np.pi,30,30]])
-GOAL_TOLERANCE 	= 15
+GOAL_TOLERANCE 	= 1
 
 if __name__ == "__main__":
 	# planning_timeout = 0
@@ -95,18 +95,18 @@ if __name__ == "__main__":
 					# print "Goal reached. No further tree nodes will be added."
 					# print "Number of tree nodes: ", (nodeList.shape[0])
 					#
-					# # Print the path
-					# completePath = treeNodes[-1].childNode
-					# parentIndex = np.where(nodeList == treeNodes[-1].parentNode)[0]
-					# while parentIndex[0] != 0:
-					# 	completePath = np.vstack((completePath, treeNodes[parentIndex[0]].childNode))
-					# 	parentIndex = np.where(nodeList == treeNodes[parentIndex[0]].parentNode)[0]
-					# 	print parentIndex[0]
-					# completePath = np.vstack((completePath, treeNodes[parentIndex[0]].childNode))
-					# print completePath
-					# pathLength = completePath.shape[0]
-					# print "Path length = ",pathLength
-					# np.savetxt('completePath.txt',completePath,delimiter=',')
+					# Print the path
+					completePath = treeNodes[-1].childNode
+					parentIndex = np.where(nodeList == treeNodes[-1].parentNode)[0]
+					while parentIndex[0] != 0:
+						completePath = np.vstack((completePath, treeNodes[parentIndex[0]].childNode))
+						parentIndex = np.where(nodeList == treeNodes[parentIndex[0]].parentNode)[0]
+						print parentIndex[0]
+					completePath = np.vstack((completePath, treeNodes[parentIndex[0]].childNode))
+					print completePath
+					pathLength = completePath.shape[0]
+					print "Path length = ",pathLength
+					np.savetxt('completePath.txt',completePath,delimiter=',')
 					#
 					# while pathLength >= 2:
 					# 	srcDst1 = np.array([completePath[pathLength-1][0],completePath[pathLength-2][0]])
