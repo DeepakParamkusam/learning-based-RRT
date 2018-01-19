@@ -1,0 +1,14 @@
+#!/bin/bash
+thread="a b c d e f g h i j k l m n o p q r s t u v w x y" 
+mkdir final_sorted
+
+for z in $thread;do
+	mkdir $z
+	mv *_$z.txt $z/
+	./gen_control_thread $z $z
+	./gen_cost_thread $z $z
+	cp $z/sorted/*.txt final_sorted/	
+done
+cd final_sorted
+cat control_data_*.txt > control_100k.txt
+cat cost_*.txt > cost_100k.txt
