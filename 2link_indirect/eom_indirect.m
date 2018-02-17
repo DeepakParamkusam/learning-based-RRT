@@ -36,7 +36,7 @@ xd = [x3;x4;qdd(1);qdd(2)];
 lambda = [lbd1;lbd2;lbd3;lbd4];
 
 %cost and hamiltonian
-C = u'*u; %change cost later
+C = 0.5* (u'*u); %change cost later
 H = C + lambda'*xd;
 
 % finding u*
