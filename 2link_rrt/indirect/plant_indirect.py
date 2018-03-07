@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.optimize import fsolve
 
 def plantRRTSimulate(costFinal,q0,phi0):
 	combinedState0 = plantInitialState(q0,phi0)
@@ -62,6 +63,27 @@ def plantEOM(time,fullState):
 	fullStateDot = np.array([q1Dot,q2Dot,qd1Dot,qd2Dot,lbd1Dot,lbd2Dot,lbd3Dot,lbd4Dot,costDot])
 	return fullStateDot
 
+# def plantInitialState(x0,phi0):
+# 	q1 = x0[0]
+# 	q2 = x0[1]
+# 	qd1 = x0[2]
+# 	qd2 = x0[3]
+
+# 	lbd1 = phi0[0]
+# 	lbd2 = phi0[1]
+# 	lbd3 = phi0[2]
+	
+# 	lbd4 = -((3*np.cos(q2) - 4)*(3*np.cos(q2) + 4)*(288*lbd3 - 320*qd1**2*np.sin(q2) - 64*qd2**2*np.sin(q2) - 23*(416*lbd1*qd1 + 416*lbd2*qd2 + 100*qd1**4*np.sin(q2)**2 + 4*qd2**4*np.sin(q2)**2 - 36*lbd3**2 + 528*lbd1*qd1*np.cos(q2) + 528*lbd2*qd2*np.cos(q2) + 56*qd1**2*qd2**2*np.sin(q2)**2 + 120*qd1**4*np.cos(q2)*np.sin(q2)**2 + 12*qd2**4*np.cos(q2)*np.sin(q2)**2 + 180*lbd1*qd1*np.cos(q2)**2 + 180*lbd2*qd2*np.cos(q2)**2 - 24*lbd3*qd1**2*np.sin(q2) + 120*lbd3*qd2**2*np.sin(q2) + 36*qd1**4*np.cos(q2)**2*np.sin(q2)**2 + 9*qd2**4*np.cos(q2)**2*np.sin(q2)**2 + 16*qd1*qd2**3*np.sin(q2)**2 + 80*qd1**3*qd2*np.sin(q2)**2 + 132*qd1**2*qd2**2*np.cos(q2)*np.sin(q2)**2 + 36*qd1*qd2**3*np.cos(q2)**2*np.sin(q2)**2 + 72*qd1**3*qd2*np.cos(q2)**2*np.sin(q2)**2 - 36*lbd3*qd1**2*np.cos(q2)*np.sin(q2) + 72*lbd3*qd2**2*np.cos(q2)*np.sin(q2) + 72*qd1**2*qd2**2*np.cos(q2)**2*np.sin(q2)**2 + 240*lbd3*qd1*qd2*np.sin(q2) + 48*qd1*qd2**3*np.cos(q2)*np.sin(q2)**2 + 168*qd1**3*qd2*np.cos(q2)*np.sin(q2)**2 + 144*lbd3*qd1*qd2*np.cos(q2)*np.sin(q2))**(1/2) - 96*qd1**2*np.sin(2*q2) - 48*qd2**2*np.sin(2*q2) + 576*lbd3*np.cos(q2) + 9*np.cos(2*q2)*(416*lbd1*qd1 + 416*lbd2*qd2 + 100*qd1**4*np.sin(q2)**2 + 4*qd2**4*np.sin(q2)**2 - 36*lbd3**2 + 528*lbd1*qd1*np.cos(q2) + 528*lbd2*qd2*np.cos(q2) + 56*qd1**2*qd2**2*np.sin(q2)**2 + 120*qd1**4*np.cos(q2)*np.sin(q2)**2 + 12*qd2**4*np.cos(q2)*np.sin(q2)**2 + 180*lbd1*qd1*np.cos(q2)**2 + 180*lbd2*qd2*np.cos(q2)**2 - 24*lbd3*qd1**2*np.sin(q2) + 120*lbd3*qd2**2*np.sin(q2) + 36*qd1**4*np.cos(q2)**2*np.sin(q2)**2 + 9*qd2**4*np.cos(q2)**2*np.sin(q2)**2 + 16*qd1*qd2**3*np.sin(q2)**2 + 80*qd1**3*qd2*np.sin(q2)**2 + 132*qd1**2*qd2**2*np.cos(q2)*np.sin(q2)**2 + 36*qd1*qd2**3*np.cos(q2)**2*np.sin(q2)**2 + 72*qd1**3*qd2*np.cos(q2)**2*np.sin(q2)**2 - 36*lbd3*qd1**2*np.cos(q2)*np.sin(q2) + 72*lbd3*qd2**2*np.cos(q2)*np.sin(q2) + 72*qd1**2*qd2**2*np.cos(q2)**2*np.sin(q2)**2 + 240*lbd3*qd1*qd2*np.sin(q2) + 48*qd1*qd2**3*np.cos(q2)*np.sin(q2)**2 + 168*qd1**3*qd2*np.cos(q2)*np.sin(q2)**2 + 144*lbd3*qd1*qd2*np.cos(q2)*np.sin(q2))**(1/2) + 216*lbd3*np.cos(q2)**2 - 128*qd1*qd2*np.sin(q2) + 180*qd1**2*np.cos(q2)**2*np.sin(q2) + 36*qd2**2*np.cos(q2)**2*np.sin(q2) - 96*qd1*qd2*np.sin(2*q2) + 54*qd1**2*np.sin(2*q2)*np.cos(q2)**2 + 27*qd2**2*np.sin(2*q2)*np.cos(q2)**2 + 72*qd1*qd2*np.cos(q2)**2*np.sin(q2) + 54*qd1*qd2*np.sin(2*q2)*np.cos(q2)**2))/(6*(936*np.cos(2*q2) + 5412*np.cos(q2) - 1899*np.cos(q2)**2 - 4752*np.cos(q2)**3 - 1620*np.cos(q2)**4 + 1188*np.cos(2*q2)*np.cos(q2) + 405*np.cos(2*q2)*np.cos(q2)**2 + 4264))
+# 	cost = 0
+# 	if np.isnan(lbd4):
+# 		lbd4 = 0
+# 		cost = 50
+
+# 	if np.sign(np.cos(q2)) > 0:
+# 		lbd4= -lbd4
+# 	x0 = np.array([q1,q2,qd1,qd2,lbd1,lbd2,lbd3,lbd4,cost])
+# 	return x0
+
 def plantInitialState(x0,phi0):
 	q1 = x0[0]
 	q2 = x0[1]
@@ -71,14 +93,25 @@ def plantInitialState(x0,phi0):
 	lbd1 = phi0[0]
 	lbd2 = phi0[1]
 	lbd3 = phi0[2]
-	
-	lbd4 = -((3*np.cos(q2) - 4)*(3*np.cos(q2) + 4)*(288*lbd3 - 320*qd1**2*np.sin(q2) - 64*qd2**2*np.sin(q2) - 23*(416*lbd1*qd1 + 416*lbd2*qd2 + 100*qd1**4*np.sin(q2)**2 + 4*qd2**4*np.sin(q2)**2 - 36*lbd3**2 + 528*lbd1*qd1*np.cos(q2) + 528*lbd2*qd2*np.cos(q2) + 56*qd1**2*qd2**2*np.sin(q2)**2 + 120*qd1**4*np.cos(q2)*np.sin(q2)**2 + 12*qd2**4*np.cos(q2)*np.sin(q2)**2 + 180*lbd1*qd1*np.cos(q2)**2 + 180*lbd2*qd2*np.cos(q2)**2 - 24*lbd3*qd1**2*np.sin(q2) + 120*lbd3*qd2**2*np.sin(q2) + 36*qd1**4*np.cos(q2)**2*np.sin(q2)**2 + 9*qd2**4*np.cos(q2)**2*np.sin(q2)**2 + 16*qd1*qd2**3*np.sin(q2)**2 + 80*qd1**3*qd2*np.sin(q2)**2 + 132*qd1**2*qd2**2*np.cos(q2)*np.sin(q2)**2 + 36*qd1*qd2**3*np.cos(q2)**2*np.sin(q2)**2 + 72*qd1**3*qd2*np.cos(q2)**2*np.sin(q2)**2 - 36*lbd3*qd1**2*np.cos(q2)*np.sin(q2) + 72*lbd3*qd2**2*np.cos(q2)*np.sin(q2) + 72*qd1**2*qd2**2*np.cos(q2)**2*np.sin(q2)**2 + 240*lbd3*qd1*qd2*np.sin(q2) + 48*qd1*qd2**3*np.cos(q2)*np.sin(q2)**2 + 168*qd1**3*qd2*np.cos(q2)*np.sin(q2)**2 + 144*lbd3*qd1*qd2*np.cos(q2)*np.sin(q2))**(1/2) - 96*qd1**2*np.sin(2*q2) - 48*qd2**2*np.sin(2*q2) + 576*lbd3*np.cos(q2) + 9*np.cos(2*q2)*(416*lbd1*qd1 + 416*lbd2*qd2 + 100*qd1**4*np.sin(q2)**2 + 4*qd2**4*np.sin(q2)**2 - 36*lbd3**2 + 528*lbd1*qd1*np.cos(q2) + 528*lbd2*qd2*np.cos(q2) + 56*qd1**2*qd2**2*np.sin(q2)**2 + 120*qd1**4*np.cos(q2)*np.sin(q2)**2 + 12*qd2**4*np.cos(q2)*np.sin(q2)**2 + 180*lbd1*qd1*np.cos(q2)**2 + 180*lbd2*qd2*np.cos(q2)**2 - 24*lbd3*qd1**2*np.sin(q2) + 120*lbd3*qd2**2*np.sin(q2) + 36*qd1**4*np.cos(q2)**2*np.sin(q2)**2 + 9*qd2**4*np.cos(q2)**2*np.sin(q2)**2 + 16*qd1*qd2**3*np.sin(q2)**2 + 80*qd1**3*qd2*np.sin(q2)**2 + 132*qd1**2*qd2**2*np.cos(q2)*np.sin(q2)**2 + 36*qd1*qd2**3*np.cos(q2)**2*np.sin(q2)**2 + 72*qd1**3*qd2*np.cos(q2)**2*np.sin(q2)**2 - 36*lbd3*qd1**2*np.cos(q2)*np.sin(q2) + 72*lbd3*qd2**2*np.cos(q2)*np.sin(q2) + 72*qd1**2*qd2**2*np.cos(q2)**2*np.sin(q2)**2 + 240*lbd3*qd1*qd2*np.sin(q2) + 48*qd1*qd2**3*np.cos(q2)*np.sin(q2)**2 + 168*qd1**3*qd2*np.cos(q2)*np.sin(q2)**2 + 144*lbd3*qd1*qd2*np.cos(q2)*np.sin(q2))**(1/2) + 216*lbd3*np.cos(q2)**2 - 128*qd1*qd2*np.sin(q2) + 180*qd1**2*np.cos(q2)**2*np.sin(q2) + 36*qd2**2*np.cos(q2)**2*np.sin(q2) - 96*qd1*qd2*np.sin(2*q2) + 54*qd1**2*np.sin(2*q2)*np.cos(q2)**2 + 27*qd2**2*np.sin(2*q2)*np.cos(q2)**2 + 72*qd1*qd2*np.cos(q2)**2*np.sin(q2) + 54*qd1*qd2*np.sin(2*q2)*np.cos(q2)**2))/(6*(936*np.cos(2*q2) + 5412*np.cos(q2) - 1899*np.cos(q2)**2 - 4752*np.cos(q2)**3 - 1620*np.cos(q2)**4 + 1188*np.cos(2*q2)*np.cos(q2) + 405*np.cos(2*q2)*np.cos(q2)**2 + 4264))
-	cost = 0
-	if np.isnan(lbd4):
-		lbd4 = 0
-		cost = 50
 
-	if np.sign(np.cos(q2)) > 0:
-		lbd4= -lbd4
+	Hstar = lambda lbd4 : (6*lbd3 - 30*lbd4 + np.cos(q2)*(9*lbd3 - 18*lbd4))**2/(9*np.cos(q2)**2 - 16)**2 + lbd1*qd1 + lbd2*qd2 + (9*(2*lbd4 - 2*lbd3 + 3*lbd4*np.cos(q2))**2)/(9*np.cos(q2)**2 - 16)**2 + (6*lbd4*(10*qd1**2*np.sin(q2) + 2*qd2**2*np.sin(q2) - (12*(2*lbd4 - 2*lbd3 + 3*lbd4*np.cos(q2)))/(9*np.cos(q2)**2 - 16) + 3*qd1**2*np.sin(2*q2) + (3*qd2**2*np.sin(2*q2))/2 + (20*(6*lbd3 - 30*lbd4 + np.cos(q2)*(9*lbd3 - 18*lbd4)))/(9*np.cos(q2)**2 - 16) - (18*np.cos(q2)*(2*lbd4 - 2*lbd3 + 3*lbd4*np.cos(q2)))/(9*np.cos(q2)**2 - 16) + 4*qd1*qd2*np.sin(q2) + 3*qd1*qd2*np.sin(2*q2) + (12*np.cos(q2)*(6*lbd3 - 30*lbd4 + np.cos(q2)*(9*lbd3 - 18*lbd4)))/(9*np.cos(q2)**2 - 16)))/(9*np.cos(2*q2) - 23) - (3*lbd3*(2*qd1**2*np.sin(q2) + 2*qd2**2*np.sin(q2) - (12*(2*lbd4 - 2*lbd3 + 3*lbd4*np.cos(q2)))/(9*np.cos(q2)**2 - 16) + (4*(6*lbd3 - 30*lbd4 + np.cos(q2)*(9*lbd3 - 18*lbd4)))/(9*np.cos(q2)**2 - 16) + 4*qd1*qd2*np.sin(q2) + (6*np.cos(q2)*(6*lbd3 - 30*lbd4 + np.cos(q2)*(9*lbd3 - 18*lbd4)))/(9*np.cos(q2)**2 - 16) + 3*qd1**2*np.cos(q2)*np.sin(q2)))/(9*np.cos(q2)**2 - 16)
+
+	lbd4_initial_guess = np.random.uniform(-np.pi,np.pi,1)
+	lbd4 = fsolve(Hstar, lbd4_initial_guess)
+
+	#print lbd4
+
+	lbd4 = lbd4[0]
+	Hstar_value = (6*lbd3 - 30*lbd4 + np.cos(q2)*(9*lbd3 - 18*lbd4))**2/(9*np.cos(q2)**2 - 16)**2 + lbd1*qd1 + lbd2*qd2 + (9*(2*lbd4 - 2*lbd3 + 3*lbd4*np.cos(q2))**2)/(9*np.cos(q2)**2 - 16)**2 + (6*lbd4*(10*qd1**2*np.sin(q2) + 2*qd2**2*np.sin(q2) - (12*(2*lbd4 - 2*lbd3 + 3*lbd4*np.cos(q2)))/(9*np.cos(q2)**2 - 16) + 3*qd1**2*np.sin(2*q2) + (3*qd2**2*np.sin(2*q2))/2 + (20*(6*lbd3 - 30*lbd4 + np.cos(q2)*(9*lbd3 - 18*lbd4)))/(9*np.cos(q2)**2 - 16) - (18*np.cos(q2)*(2*lbd4 - 2*lbd3 + 3*lbd4*np.cos(q2)))/(9*np.cos(q2)**2 - 16) + 4*qd1*qd2*np.sin(q2) + 3*qd1*qd2*np.sin(2*q2) + (12*np.cos(q2)*(6*lbd3 - 30*lbd4 + np.cos(q2)*(9*lbd3 - 18*lbd4)))/(9*np.cos(q2)**2 - 16)))/(9*np.cos(2*q2) - 23) - (3*lbd3*(2*qd1**2*np.sin(q2) + 2*qd2**2*np.sin(q2) - (12*(2*lbd4 - 2*lbd3 + 3*lbd4*np.cos(q2)))/(9*np.cos(q2)**2 - 16) + (4*(6*lbd3 - 30*lbd4 + np.cos(q2)*(9*lbd3 - 18*lbd4)))/(9*np.cos(q2)**2 - 16) + 4*qd1*qd2*np.sin(q2) + (6*np.cos(q2)*(6*lbd3 - 30*lbd4 + np.cos(q2)*(9*lbd3 - 18*lbd4)))/(9*np.cos(q2)**2 - 16) + 3*qd1**2*np.cos(q2)*np.sin(q2)))/(9*np.cos(q2)**2 - 16)
+
+	#print("Hstar_value:", Hstar_value)
+
+	cost = 0
+	# if np.isnan(lbd4):
+	# 	lbd4 = 0
+	# 	cost = 50
+	#
+	# if np.sign(np.cos(q2)) > 0:
+	# 	lbd4= -lbd4
 	x0 = np.array([q1,q2,qd1,qd2,lbd1,lbd2,lbd3,lbd4,cost])
 	return x0

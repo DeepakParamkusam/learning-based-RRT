@@ -18,11 +18,16 @@ if input_constrained == True:
 		data = np.loadtxt('../training_data/clean_direct/control_lagrange_cons_clean.txt',delimiter=',')
 else:
 	if learnCost == True:
-		data = np.loadtxt('../training_data/clean_direct/cost_jan12_bound.txt',delimiter=',')
+		# data = np.loadtxt('../training_data/clean_direct/cost_jan12_bound.txt',delimiter=',')
 		# data = np.loadtxt('../training_data/clean_direct/cost_jan12.txt')		
+		# data = np.loadtxt('../training_data/clean_direct/cost_500k_clean.txt')
+		data = np.loadtxt('../training_data/clean_direct/cost_500k_bound.txt',delimiter=',')
 	else:
 		# data = np.loadtxt('../training_data/clean_direct/control_jan12_bound.txt',delimiter=',')
-		data = np.loadtxt('../training_data/clean_direct/control_data_jan12.txt')
+		# data = np.loadtxt('../training_data/clean_direct/control_data_jan12.txt')
+		# data = np.loadtxt('../training_data/clean_direct/control_500k_clean.txt')
+		data = np.loadtxt('../training_data/clean_direct/control_500k_bound.txt',delimiter=',')
+
 		
 X = data[:,0:8]
 if learnCost == True:
@@ -78,5 +83,5 @@ else:
 	ax.set_ylabel('Predicted cost')
 plt.show()
 
-joblib.dump(mlp, '../trained_models/mlp-direct-uncons-cost-100-100.pkl')
+joblib.dump(mlp, '../trained_models/mlp-direct-uncons-control-100-100-500k.pkl')
 

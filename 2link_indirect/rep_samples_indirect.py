@@ -1,13 +1,13 @@
 import numpy
 from datetime import datetime
 
-Y = numpy.loadtxt('Y.txt',delimiter=',')
-X = numpy.loadtxt('X.txt',delimiter=',')
+Y = numpy.loadtxt('code_check_test_y.txt',delimiter=',')
+X = numpy.loadtxt('code_check_test_x.txt',delimiter=',')
 
 # cutoff euclidean distance between states 
 eu_cut_off = 4
 # number of cleaning runs
-NUM_RUNS = 100
+NUM_RUNS = 10
 # number of samples taken into consideration in cleaning run
 SAMPLE_RANGE = 500
 # SAMPLE_RANGE number of samples are taken from a different point in the dataset to cover larger region.

@@ -4,6 +4,9 @@ from sklearn.externals import joblib
 import time
 from sklearn.preprocessing import StandardScaler
 
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 #CONSTRAINED MODEL
 mlp_control = joblib.load('../../trained_models/mlp-direct-cons-control-100-100.pkl')
 mlp_cost = joblib.load('../../trained_models/mlp-direct-cons-cost-100-100.pkl')
@@ -28,7 +31,7 @@ GOAL_STATE	= numpy.array([numpy.pi,0.,0.,0.])
 NUM_NODES	= 1000
 STATE_DIMENSION = 4
 STATE_RANGE = numpy.array([[0,0,-30,-30],[2*numpy.pi,2*numpy.pi,30,30]])
-GOAL_TOLERANCE 	= 1
+GOAL_TOLERANCE 	= 0.5
 
 class TreeNode(object):
 	parentNode 	= None
@@ -37,6 +40,7 @@ class TreeNode(object):
 	coState		= None
 
 def neighPredict(Xdata):
+	Xdata = xscaler.transform(Xdata)
 	distances, neighbours = numpy.array(kNN_cost.kneighbors(Xdata,5,return_distance=True))
 	class_pred = distances[:,-1]
 	cost_pred = numpy.array(mlp_cost.predict(Xdata))
@@ -68,7 +72,8 @@ def connectNodes(initialState, goalState,randomFactor):
 	finalCost = (cost_ann + randomFactor*numpy.random.uniform(0,1))/(1+randomFactor)
 	finalCostate = (costates_ann+randomFactor*numpy.random.uniform(0,2*numpy.pi)) / (1+randomFactor)
 	finalState = plant.RK4Simulate(initialState, finalCostate)
-
+	finalState[0] = finalState[0]%(2*numpy.pi)  
+	finalState[1] = finalState[1]%(2*numpy.pi) 
 	# Connection validity already established earlier.
 	stateError = numpy.linalg.norm(finalState - goalState)
 	# print stateError
@@ -76,9 +81,9 @@ def connectNodes(initialState, goalState,randomFactor):
 	a = finalState/numpy.linalg.norm(finalState)
 	b = goalState/numpy.linalg.norm(goalState)
 	angle = numpy.arccos(numpy.clip(numpy.dot(a.ravel(),b.ravel()),-1.,1.))
-	if stateError < 5:
+	if stateError < 10:
 		print "angle: ",numpy.degrees(angle),"\terror: ",stateError
-	if stateError < 5 and numpy.degrees(angle) < 20:
+	if stateError < 5 and numpy.degrees(angle) < 45:
 		connectionValid = True
 	else:
 		connectionValid = False
@@ -87,7 +92,7 @@ def connectNodes(initialState, goalState,randomFactor):
 
 def sampleState(stateDim,stateRange,goalState,goalTolerance):
 	# Take a random sample 80% of the time
-	if numpy.random.uniform(0, 1) < 0.8:
+	if numpy.random.uniform(0, 1) < 0.6:
 		rState  	= numpy.random.uniform(stateRange[0],stateRange[1])
 	# Take a sample near the goal 20% of the time
 	else:
@@ -117,7 +122,9 @@ def findNearestNeighbor(nodeList, rState):
 	allPredictions = neighPredict(allData)
 
 	# Locate all nodes that would lead to valid predictions.
-	validNodes = allPredictions[:,0] < NEIGHBOUR_BOUND
+	non_zero_cost = allPredictions[:,1] > 0
+	lt_neighbound = allPredictions[:,0] < NEIGHBOUR_BOUND
+	validNodes = numpy.logical_and(non_zero_cost,lt_neighbound)
 	# print validNodes
 
 	# Nodes that lead to valid predictions exist, continue further.
@@ -147,7 +154,8 @@ def findNearestNeighbor(nodeList, rState):
 
 def goalReached(currentState, goalState):
 	distanceToGoal = numpy.linalg.norm(currentState-goalState)
-	if distanceToGoal < 5:
+	print "dist to goal from last added node=",distanceToGoal
+	if distanceToGoal < 2:
 		return True
 	else:
 		return False
@@ -207,7 +215,7 @@ if __name__ == "__main__":
 			newTreeNode.childNode, newTreeNode.coState, newTreeNode.costToGo, connectionValid = \
 				connectNodes(newTreeNode.parentNode, rState,randomFactorCurrent)
 			if connectionValid:
-				print idx
+				print "numnodes=",len(treeNodes)
 				# Add the node to the tree
 				treeNodes.append(newTreeNode)
 				# Add the new node to the list of available nodes

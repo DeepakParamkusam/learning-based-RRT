@@ -4,6 +4,9 @@ import time
 from sklearn.externals import joblib
 from sklearn.preprocessing import StandardScaler
 
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 #CONSTRAINED MODEL
 # mlp_control = joblib.load('../../trained_models/mlp-indirect-cons-control-100-100.pkl')
 # mlp_cost = joblib.load('../../trained_models/mlp-indirect-cons-cost-100-100.pkl')
@@ -11,16 +14,21 @@ from sklearn.preprocessing import StandardScaler
 # x = numpy.loadtxt('../../training_data/clean_indirect/X100kc.txt',delimiter=',')
 
 #UNCONSTRAINED MODEL
-mlp_control = joblib.load('../../trained_models/mlp-indirect-uncons-control-100-100.pkl')
-mlp_cost = joblib.load('../../trained_models/mlp-indirect-uncons-cost-100-100.pkl')
-kNN_cost = joblib.load('../../trained_models/knn-indirect-uncons-cost.pkl')
-x = numpy.loadtxt('../../training_data/clean_indirect/X100k.txt',delimiter=',')
+# mlp_control = joblib.load('../../trained_models/mlp-indirect-uncons-control-100-100.pkl')
+# mlp_cost = joblib.load('../../trained_models/mlp-indirect-uncons-cost-100-100.pkl')
+# kNN_cost = joblib.load('../../trained_models/knn-indirect-uncons-cost.pkl')
+# x = numpy.loadtxt('../../training_data/clean_indirect/X100k.txt',delimiter=',')
+
+mlp_control = joblib.load('../../trained_models//mlp-indirect-new-uncons-control-100-100.pkl')
+mlp_cost = joblib.load('../../trained_models//mlp-indirect-new-uncons-cost-100-100.pkl')
+kNN_cost = joblib.load('../../trained_models/knn-indirect-100k-uncons-cost-new.pkl')
+x = numpy.loadtxt('../../2link_indirect/X_clean.txt')
 
 xscaler = StandardScaler()
 xscaler.fit(x)
 
 NUMBER_OF_NEIGHBOURS = 3
-NEIGHBOUR_BOUND = 5
+NEIGHBOUR_BOUND = 4
 STATE_DIMENSION = 4
 NUM_PLANNING_ATTEMPTS = 1
 START_STATE	= numpy.array([0.,0.,0.,0.])
@@ -38,9 +46,12 @@ class TreeNode(object):
 	coState		= None
 
 def neighPredict(Xdata):
+	Xdata = xscaler.transform(Xdata)
+	
 	distances, neighbours = numpy.array(kNN_cost.kneighbors(Xdata,5,return_distance=True))
 	class_pred = distances[:,-1]
 	cost_pred = numpy.array(mlp_cost.predict(Xdata))
+	# print "cost_pred=",cost_pred
 	return numpy.hstack((class_pred[:,None],cost_pred[:,None]))
 
 def modelPredict(initialState,goalState):
@@ -62,22 +73,30 @@ def connectNodes(initialState, goalState,randomFactor):
 	cost_ann,costates_ann  = modelPredict(initialState, goalState)
 	
 	# finalCost = cost_ann
+	# print "finalCost=",finalCost
 	# finalCostate = costates_ann
+	# print "finalCostate=",finalCostate
 	finalCost = (cost_ann + randomFactor*numpy.random.uniform(0,1))/(1+randomFactor)
 	finalCostate = (costates_ann+randomFactor*numpy.random.uniform(0,2*numpy.pi)) / (1+randomFactor)
 	# print finalCostate
 	finalState = plant_indirect.plantRRTSimulate(finalCost,initialState, finalCostate)
+	finalState[0] = finalState[0]%(2*numpy.pi)  
+	finalState[1] = finalState[1]%(2*numpy.pi) 
+	# print "finalState=",finalState
 
 	# Connection validity already established earlier.
+	# print "goalState=",goalState
 	stateError = numpy.linalg.norm(finalState - goalState)
-	# print stateError
+	# print "stateError=",stateError
 
 	a = finalState/numpy.linalg.norm(finalState)
 	b = goalState/numpy.linalg.norm(goalState)
 	angle = numpy.arccos(numpy.clip(numpy.dot(a.ravel(),b.ravel()),-1.,1.))
-	if stateError < 2:
+	# print "angle=",numpy.degrees(angle)
+	if stateError < 5:
 		print "angle: ",numpy.degrees(angle),"\terror: ",stateError
-	if stateError < 2 and numpy.degrees(angle) < 30:
+	if stateError < 5 and numpy.degrees(angle) < 20:
+	# if numpy.degrees(angle) < 45:
 		connectionValid = True
 	else:
 		connectionValid = False
@@ -116,22 +135,29 @@ def findNearestNeighbor(nodeList, rState):
 	# Filter out nodes that would lead to invalid prediction based on nearest neighbors.
 	# This means, the randomly sampled node is too far from the trained model.
 	allPredictions = neighPredict(allData)
+	# print "allPredictions=",allPredictions
 	
 	# Locate all nodes that would lead to valid predictions.
-	validNodes = allPredictions[:,0] < NEIGHBOUR_BOUND
+	non_zero_cost = allPredictions[:,1] > 0
+	lt_neighbound = allPredictions[:,0] < NEIGHBOUR_BOUND
+	validNodes = numpy.logical_and(non_zero_cost,lt_neighbound)
+	# print "validNodes=",validNodes
 	
 	# Nodes that lead to valid predictions exist, continue further.
 	if validNodes.any():
 		# Compute the predictions based on Neural nets.
 		#cost,coState = rrt_predict(allData, model)
 		cost = allPredictions[:,1]
+		# print "cost=",cost
 
 		# Get the indices of potential nearest neighbors.
 		nnIdces = sparse_argsort(cost, validNodes)[:NUMBER_OF_NEIGHBOURS]
+		# print "nnIdces=",nnIdces
 
 		# Pick a random neighbor from the potential neighbors.
 		nnIdx = numpy.random.randint(0,len(nnIdces))
 		neighbor = t_nodeList[nnIdces[nnIdx],:]
+		# print "neighbour=",neighbor
 
 		# Get the cost-to-go from neighbor to the random state.
 		costChosen = cost[nnIdces[nnIdx]]
@@ -144,6 +170,7 @@ def findNearestNeighbor(nodeList, rState):
 
 def goalReached(currentState, goalState):
 	distanceToGoal = numpy.linalg.norm(currentState-goalState)
+	# print "distanceToGoal=",distanceToGoal
 	if distanceToGoal < 1:
 		return True
 	else:
@@ -187,10 +214,13 @@ if __name__ == "__main__":
 			while foundValidPrediction == False:
 				# Sample a new random state from state space.
 				rState = sampleState(STATE_DIMENSION, STATE_RANGE,GOAL_STATE,GOAL_TOLERANCE)
+				# print "rState=",rState
 				# print rState
 				# Find the nearest neighbor
 				newTreeNode.parentNode, newTreeNode.costToGo, foundValidPrediction = \
 					findNearestNeighbor(nodeList,rState)
+				
+				# raw_input("next")
 
 			# If the new state is within tolerance of the goal
 			if numpy.linalg.norm(rState - pGoal) < GOAL_TOLERANCE :
@@ -203,8 +233,9 @@ if __name__ == "__main__":
 			# Connect the neighbor to the node
 			newTreeNode.childNode, newTreeNode.coState, newTreeNode.costToGo, connectionValid = \
 				connectNodes(newTreeNode.parentNode, rState,randomFactorCurrent)
+			# raw_input("next")
 			if connectionValid:
-				print idx
+				print "OK!!!"
 				# Add the node to the tree
 				treeNodes.append(newTreeNode)
 				# Add the new node to the list of available nodes
@@ -212,6 +243,7 @@ if __name__ == "__main__":
 
 				goalReach = goalReached(newTreeNode.childNode, pGoal)
 				if goalReach:
+					print "OH BABY!!"
 					print "final node: ",newTreeNode.childNode
 					time2 = time.time()
 					planning_time = (time2 - time1)

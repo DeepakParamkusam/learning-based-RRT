@@ -4,6 +4,9 @@ import time
 from sklearn.externals import joblib
 from sklearn.preprocessing import StandardScaler
 
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 #CONSTRAINED MODEL
 kNN_control = joblib.load('../../trained_models/knn-direct-cons-control.pkl')
 kNN_cost = joblib.load('../../trained_models/knn-direct-cons-cost.pkl')
@@ -36,6 +39,8 @@ class TreeNode(object):
 	coState		= None
 
 def neighPredict(Xdata):
+	Xdata = xscaler.transform(Xdata)
+
 	distances, neighbours = numpy.array(kNN_cost.kneighbors(Xdata,5,return_distance=True))
 	neighbours = neighbours.astype(int)
 	
@@ -72,7 +77,8 @@ def connectNodes(initialState, goalState,randomFactor):
 	finalCost = (cost_ann + randomFactor*numpy.random.uniform(0,1))/(1+randomFactor)
 	finalCostate = (costates_ann+randomFactor*numpy.random.uniform(0,2*numpy.pi)) / (1+randomFactor)
 	finalState = plant.RK4Simulate(initialState, finalCostate)
-
+	finalState[0] = finalState[0]%(2*numpy.pi)  
+	finalState[1] = finalState[1]%(2*numpy.pi) 
 	# Connection validity already established earlier.
 	stateError = numpy.linalg.norm(finalState - goalState)
 	# print stateError
@@ -80,9 +86,9 @@ def connectNodes(initialState, goalState,randomFactor):
 	a = finalState/numpy.linalg.norm(finalState)
 	b = goalState/numpy.linalg.norm(goalState)
 	angle = numpy.arccos(numpy.clip(numpy.dot(a.ravel(),b.ravel()),-1.,1.))
-	if stateError < 2:
+	if stateError < 5:
 		print "angle: ",numpy.degrees(angle),"\terror: ",stateError
-	if stateError < 2 and numpy.degrees(angle) < 30:
+	if stateError < 5 and numpy.degrees(angle) < 45:
 		connectionValid = True
 	else:
 		connectionValid = False
@@ -91,7 +97,7 @@ def connectNodes(initialState, goalState,randomFactor):
 
 def sampleState(stateDim,stateRange,goalState,goalTolerance):
 	# Take a random sample 80% of the time
-	if numpy.random.uniform(0, 1) < 0.8:
+	if numpy.random.uniform(0, 1) < 0.6:
 		rState  	= numpy.random.uniform(stateRange[0],stateRange[1])
 	# Take a sample near the goal 20% of the time
 	else:
@@ -104,7 +110,7 @@ def sampleState(stateDim,stateRange,goalState,goalTolerance):
 # return the original location of indices without altering original array size.
 def sparse_argsort(arr, validNodes):
 	indices = numpy.where(validNodes)[0].flatten()
-	print indices
+	# print indices
 	return indices[numpy.argsort(arr[indices])]
 
 def findNearestNeighbor(nodeList, rState):
@@ -123,7 +129,9 @@ def findNearestNeighbor(nodeList, rState):
 	allPredictions = neighPredict(allData)
 	
 	# Locate all nodes that would lead to valid predictions.
-	validNodes = allPredictions[:,0] < NEIGHBOUR_BOUND
+	non_zero_cost = allPredictions[:,1] > 0
+	lt_neighbound = allPredictions[:,0] < NEIGHBOUR_BOUND
+	validNodes = numpy.logical_and(non_zero_cost,lt_neighbound)
 	
 	# Nodes that lead to valid predictions exist, continue further.
 	if validNodes.any():
@@ -149,6 +157,7 @@ def findNearestNeighbor(nodeList, rState):
 
 def goalReached(currentState, goalState):
 	distanceToGoal = numpy.linalg.norm(currentState-goalState)
+	print "dist=",distanceToGoal
 	if distanceToGoal < 1:
 		return True
 	else:
@@ -209,7 +218,7 @@ if __name__ == "__main__":
 			newTreeNode.childNode, newTreeNode.coState, newTreeNode.costToGo, connectionValid = \
 				connectNodes(newTreeNode.parentNode, rState,randomFactorCurrent)
 			if connectionValid:
-				print idx
+				print "numNodes=",len(treeNodes)
 				# Add the node to the tree
 				treeNodes.append(newTreeNode)
 				# Add the new node to the list of available nodes

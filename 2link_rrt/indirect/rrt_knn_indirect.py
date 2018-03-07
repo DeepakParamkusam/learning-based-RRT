@@ -4,6 +4,9 @@ import time
 from sklearn.externals import joblib
 from sklearn.preprocessing import StandardScaler
 
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 #CONSTRAINED MODEL
 # kNN_control = joblib.load('../../trained_models/knn-indirect-cons-control.pkl')
 # kNN_cost = joblib.load('../../trained_models/knn-indirect-cons-cost.pkl')
@@ -11,16 +14,21 @@ from sklearn.preprocessing import StandardScaler
 # x = numpy.loadtxt('../../training_data/clean_indirect/X100kc.txt',delimiter=',')
 
 #UNCONSTRAINED MODEL
-kNN_control = joblib.load('../../trained_models/knn-indirect-uncons-control.pkl')
-kNN_cost = joblib.load('../../trained_models/knn-indirect-uncons-cost.pkl')
-cost_training = numpy.loadtxt('../../training_data/clean_indirect/Y100k.txt',delimiter=',')
-x = numpy.loadtxt('../../training_data/clean_indirect/X100k.txt',delimiter=',')
+# kNN_control = joblib.load('../../trained_models/knn-indirect-uncons-control.pkl')
+# kNN_cost = joblib.load('../../trained_models/knn-indirect-uncons-cost.pkl')
+# cost_training = numpy.loadtxt('../../training_data/clean_indirect/Y100k.txt',delimiter=',')
+# x = numpy.loadtxt('../../training_data/clean_indirect/X100k.txt',delimiter=',')
+
+kNN_control = joblib.load('../../trained_models/knn-indirect-100k-uncons-control-new.pkl')
+kNN_cost = joblib.load('../../trained_models/knn-indirect-100k-uncons-cost-new.pkl')
+cost_training = numpy.loadtxt('../../2link_indirect/Y_clean.txt')
+x = numpy.loadtxt('../../2link_indirect/X_clean.txt')
 
 xscaler = StandardScaler()
 xscaler.fit(x)
 
 NUMBER_OF_NEIGHBOURS = 3
-NEIGHBOUR_BOUND = 5
+NEIGHBOUR_BOUND = 4
 STATE_DIMENSION = 4
 NUM_PLANNING_ATTEMPTS = 1
 START_STATE	= numpy.array([0.,0.,0.,0.])
@@ -29,7 +37,7 @@ GOAL_STATE	= numpy.array([numpy.pi,0.,0.,0.])
 NUM_NODES	= 1000
 STATE_DIMENSION = 4
 STATE_RANGE = numpy.array([[0,0,-30,-30],[2*numpy.pi,2*numpy.pi,30,30]])
-GOAL_TOLERANCE 	= 1
+GOAL_TOLERANCE 	= .1
 
 class TreeNode(object):
 	parentNode 	= None
@@ -38,6 +46,7 @@ class TreeNode(object):
 	coState		= None
 
 def neighPredict(Xdata):
+	Xdata = xscaler.transform(Xdata)
 	distances, neighbours = numpy.array(kNN_cost.kneighbors(Xdata,5,return_distance=True))
 	neighbours = neighbours.astype(int)
 	
@@ -72,17 +81,19 @@ def connectNodes(initialState, goalState,randomFactor):
 	finalCostate = (costates_ann+randomFactor*numpy.random.uniform(0,2*numpy.pi)) / (1+randomFactor)
 	# print finalCostate
 	finalState = plant_indirect.plantRRTSimulate(finalCost,initialState, finalCostate)
-
+	finalState[0] = finalState[0]%(2*numpy.pi)  
+	finalState[1] = finalState[1]%(2*numpy.pi) 
 	# Connection validity already established earlier.
 	stateError = numpy.linalg.norm(finalState - goalState)
-	# print stateError
+	print "stateError=",stateError
 
 	a = finalState/numpy.linalg.norm(finalState)
 	b = goalState/numpy.linalg.norm(goalState)
 	angle = numpy.arccos(numpy.clip(numpy.dot(a.ravel(),b.ravel()),-1.,1.))
-	if stateError < 2:
+	if stateError < 8:
 		print "angle: ",numpy.degrees(angle),"\terror: ",stateError
-	if stateError < 2 and numpy.degrees(angle) < 30:
+	# if stateError < 2 and numpy.degrees(angle) < 30:
+	if numpy.degrees(angle) < 45:
 		connectionValid = True
 	else:
 		connectionValid = False
@@ -123,7 +134,9 @@ def findNearestNeighbor(nodeList, rState):
 	allPredictions = neighPredict(allData)
 	
 	# Locate all nodes that would lead to valid predictions.
-	validNodes = allPredictions[:,0] < NEIGHBOUR_BOUND
+	non_zero_cost = allPredictions[:,1] > 0
+	lt_neighbound = allPredictions[:,0] < NEIGHBOUR_BOUND
+	validNodes = numpy.logical_and(non_zero_cost,lt_neighbound)
 	
 	# Nodes that lead to valid predictions exist, continue further.
 	if validNodes.any():
@@ -185,7 +198,7 @@ if __name__ == "__main__":
 		idx = 2
 
 		for idx in range(NUM_NODES):
-			# print idx
+			print idx
 			newTreeNode = TreeNode()
 			# Find the nearest neighbour to connect to
 			foundValidPrediction = False
@@ -209,7 +222,7 @@ if __name__ == "__main__":
 			newTreeNode.childNode, newTreeNode.coState, newTreeNode.costToGo, connectionValid = \
 				connectNodes(newTreeNode.parentNode, rState,randomFactorCurrent)
 			if connectionValid:
-				print idx
+				print "connectionValid=",idx
 				# Add the node to the tree
 				treeNodes.append(newTreeNode)
 				# Add the new node to the list of available nodes

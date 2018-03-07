@@ -8,26 +8,36 @@ from sklearn.model_selection import cross_val_score
 from sklearn.externals import joblib
 
 YscaledFlag = False #FALSE IF OUTPUT IS NOT SCALED
-learnCost = True
+learnCost = False
 input_constrained = False
 
 if input_constrained == True:
 	if learnCost == True:
 		data = np.loadtxt('../training_data/clean_direct/cost_lagrange_cons_clean.txt',delimiter=',')
-		k_cost = 4
+		# k_cost = 4
+		k_cost = 1
 	else:
 		data = np.loadtxt('../training_data/clean_direct/control_lagrange_cons_clean.txt',delimiter=',')
-		k_control = 22
+		# k_control = 22
+		k_control = 1
 
 else:
 	if learnCost == True:
-		data = np.loadtxt('../training_data/clean_direct/cost_jan12_bound.txt',delimiter=',')
+		# data = np.loadtxt('../training_data/clean_direct/cost_jan12_bound.txt',delimiter=',')
 		# data = np.loadtxt('../training_data/clean_direct/cost_jan12.txt')
-		k_cost = 13
+		data = np.loadtxt('../training_data/clean_direct/cost_500k_clean.txt')
+		# data = np.loadtxt('../training_data/clean_direct/cost_500k_2kbound.txt',delimiter=',')
+		# k_cost = 12
+		# k_cost = 13 #500k
+		k_cost = 1
 	else:
 		# data = np.loadtxt('../training_data/clean_direct/control_jan12_bound.txt',delimiter=',')
-		data = np.loadtxt('../training_data/clean_direct/control_data_jan12.txt')
-		k_control = 18
+		# data = np.loadtxt('../training_data/clean_direct/control_data_jan12.txt')
+		data = np.loadtxt('../training_data/clean_direct/control_500k_clean.txt')
+		# data = np.loadtxt('../training_data/clean_direct/control_500k_2kbound.txt',delimiter=',')
+		# k_control = 18 #500k
+		# k_control = 7
+		k_control = 1
 
 
 x = data[:,0:8]
@@ -84,7 +94,7 @@ else:
 	ax.set_ylabel('Predicted cost')
 plt.show()
 
-joblib.dump(knn, '../trained_models/knn-direct-uncons-cost.pkl')
+# joblib.dump(knn, '../trained_models/knn-direct-uncons-cost.pkl')
 
 
 

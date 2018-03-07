@@ -91,7 +91,7 @@ def plantDataRun(tFinal,dtSimulate,subSample,x0,phi0,tBound,stateBound,costBound
 	Youtput[:,1] = np.transpose(isValidSamples)
 	Youtput[:,2:] = phi0Samples
 
-	print phi0Samples
+	# print phi0Samples
 
 	return[Xoutput,Youtput];
 
@@ -219,7 +219,7 @@ def checkControlConstraint(x,phi):
 		u2 = -(6*phi[i][2] - 30*phi[i][3] + np.cos(x[i][1])*(9*phi[i][2] - 18*phi[i][3]))/(9*np.cos(x[i][1])**2 - 16)
 
 		#hard coded control limit
-		if (np.abs(u1)<400) or (np.abs(u2)<400):
+		if (np.abs(u1)<40) or (np.abs(u2)<40):
 			controlValid[i] = True
 		# else:
 			# print "CONSTRAINT VIOLATED!!"

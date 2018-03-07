@@ -8,20 +8,22 @@ from sklearn.model_selection import train_test_split
 from sklearn.externals import joblib
 
 YscaledFlag = False #FALSE IF OUTPUT IS NOT SCALED
-learnCost = True
-input_constrained = True
+learnCost = False
+input_constrained = False
 
 if input_constrained == True:
 	#INDIRECT CONS DATA
-	x = np.loadtxt('../training_data/clean_indirect/X100kc.txt',delimiter=',')
-	y = np.loadtxt('../training_data/clean_indirect/Y100kc.txt',delimiter=',')
+	x = np.loadtxt('../training_data/clean_indirect/X100kc_nz.txt',delimiter=',')
+	y = np.loadtxt('../training_data/clean_indirect/Y100kc_nz.txt',delimiter=',')
 else:
 	#INDIRECT UNCONS DATA
-	x = np.loadtxt('../training_data/clean_indirect/X100k.txt',delimiter=',')
-	y = np.loadtxt('../training_data/clean_indirect/Y100k.txt',delimiter=',')
+	# x = np.loadtxt('../training_data/clean_indirect/X10b.txt',delimiter=',')
+	# y = np.loadtxt('../training_data/clean_indirect/Y10b.txt',delimiter=',')
+	x = np.loadtxt('../2link_indirect/X_clean.txt')
+	y = np.loadtxt('../2link_indirect/Y_clean.txt')
 
 y_cost = y[:,0]
-y_control = y[:,1:]
+y_control = y[:,2:]
 y_cost = y_cost.reshape(-1,1)
 
 X = x
@@ -77,5 +79,5 @@ else:
 	ax.set_ylabel('Predicted cost')
 plt.show()
 
-joblib.dump(mlp, '../trained_models/mlp-indirect-uncons-cost-100-100.pkl')
+joblib.dump(mlp, '../trained_models/mlp-indirect-new-uncons-control-100-100.pkl')
 

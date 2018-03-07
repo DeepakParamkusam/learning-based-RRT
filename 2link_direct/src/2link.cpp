@@ -32,9 +32,9 @@ int gen_data(float bounds[8], int index, char thread){
 
   //  -------------------------------------
 
-  OCP ocp( 0.0, 0.5 );  
-  ocp.minimizeLagrangeTerm(tau1*tau1 + tau2*tau2);
-  ocp.minimizeMayerTerm(q1*q1 + q2*q2 + qd1*qd1 + qd2*qd2 );
+  OCP ocp( 0.0, 0.5,5 );  
+  ocp.minimizeLagrangeTerm(1+tau1*tau1 + tau2*tau2);
+  //ocp.minimizeMayerTerm(q1*q1 + q2*q2 + qd1*qd1 + qd2*qd2 );
 
   f << dot(q1) == qd1;
   f << dot(q2) == qd2;
@@ -55,19 +55,19 @@ int gen_data(float bounds[8], int index, char thread){
   ocp.subjectTo(AT_END, qd2 == bounds[7]);
 
   // bounds on the control input u
-  // ocp.subjectTo(-400 <= tau1 <= 400);  
-  // ocp.subjectTo(-400 <= tau2 <= 400);
+  ocp.subjectTo(-400 <= tau1 <= 400);  
+  ocp.subjectTo(-400 <= tau2 <= 400);
 
   //  -------------------------------------
   
   // Optimization algorithm
   OptimizationAlgorithm algorithm(ocp);     
-  algorithm.set( DISCRETIZATION_TYPE , MULTIPLE_SHOOTING);
+  algorithm.set( DISCRETIZATION_TYPE , SINGLE_SHOOTING);
   algorithm.set( INTEGRATOR_TYPE , INT_RK45);
   algorithm.set( HESSIAN_APPROXIMATION   , BLOCK_BFGS_UPDATE);
-  algorithm.set( KKT_TOLERANCE   , 1e-4); 
-  algorithm.set( ABSOLUTE_TOLERANCE, 1e-4);
-  algorithm.set( INTEGRATOR_TOLERANCE, 1e-4);
+  algorithm.set( KKT_TOLERANCE   , 1e-1); 
+  algorithm.set( ABSOLUTE_TOLERANCE, 1e-1);
+  algorithm.set( INTEGRATOR_TOLERANCE, 1e-1);
   algorithm.set( MAX_NUM_ITERATIONS, 1000);
   algorithm.set( MAX_NUM_INTEGRATOR_STEPS, 10000);
 

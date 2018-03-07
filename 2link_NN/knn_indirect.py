@@ -9,23 +9,28 @@ from sklearn.externals import joblib
 
 YscaledFlag = False #FALSE IF OUTPUT IS NOT SCALED
 learnCost = False
-input_constrained = True 
+input_constrained = False
 
 if input_constrained == True:
 	#INDIRECT CONS DATA
-	x = np.loadtxt('../training_data/clean_indirect/X100kc.txt',delimiter=',')
-	y = np.loadtxt('../training_data/clean_indirect/Y100kc.txt',delimiter=',')
+	x = np.loadtxt('../training_data/clean_indirect/X100kc_nz.txt',delimiter=',')
+	y = np.loadtxt('../training_data/clean_indirect/Y100kc_nz.txt',delimiter=',')
 	k_control = 6
 	k_cost = 3
 else:
 	#INDIRECT UNCONS DATA
-	x = np.loadtxt('../training_data/clean_indirect/X100k.txt',delimiter=',')
-	y = np.loadtxt('../training_data/clean_indirect/Y100k.txt',delimiter=',')
-	k_control = 7
-	k_cost = 2
+	# x = np.loadtxt('../training_data/clean_indirect/X10b.txt',delimiter=',')
+	# y = np.loadtxt('../training_data/clean_indirect/Y10b.txt',delimiter=',')
+	x = np.loadtxt('../2link_indirect/X_clean.txt')
+	y = np.loadtxt('../2link_indirect/Y_clean.txt')
+	# k_control = 7
+	# k_cost = 2
+	k_cost = 3 #new indirect
+	k_control = 16
 
 y_cost = y[:,0]
-y_control = y[:,1:]
+y_control = y[:,2:]
+# print y_control.shape
 y_cost = y_cost.reshape(-1,1)
 
 X = x
@@ -75,7 +80,7 @@ else:
 	ax.set_ylabel('Predicted cost')
 plt.show()
 
-joblib.dump(knn, '../trained_models/knn-indirect-cons-control.pkl')
+joblib.dump(knn, '../trained_models/knn-indirect-100k-uncons-control-new.pkl')
 
 
 
